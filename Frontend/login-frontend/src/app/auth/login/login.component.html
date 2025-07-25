@@ -1,0 +1,58 @@
+<!-- src/app/auth/login/login.component.html -->
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <h2>Iniciar Sesión</h2>
+      <p>Gestor de Insumos</p>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      <div class="form-group">
+        <label for="mail">Email</label>
+        <input 
+          type="email" 
+          id="mail"
+          formControlName="mail" 
+          class="form-control"
+          [class.is-invalid]="submitted && f['mail'].errors"
+          placeholder="Ingrese su email">
+        <div *ngIf="submitted && f['mail'].errors" class="invalid-feedback">
+          <div *ngIf="f['mail'].errors['required']">El email es requerido</div>
+          <div *ngIf="f['mail'].errors['email']">Ingrese un email válido</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="contrasena">Contraseña</label>
+        <input 
+          type="password" 
+          id="contrasena"
+          formControlName="contrasena" 
+          class="form-control"
+          [class.is-invalid]="submitted && f['contrasena'].errors"
+          placeholder="Ingrese su contraseña">
+        <div *ngIf="submitted && f['contrasena'].errors" class="invalid-feedback">
+          <div *ngIf="f['contrasena'].errors['required']">La contraseña es requerida</div>
+        </div>
+      </div>
+
+      <div *ngIf="error" class="alert alert-danger">
+        {{ error }}
+      </div>
+
+      <button 
+        type="submit" 
+        class="btn btn-primary btn-block"
+        [disabled]="loading">
+        <span *ngIf="loading" class="spinner-border spinner-border-sm mr-2"></span>
+        {{ loading ? 'Ingresando...' : 'Ingresar' }}
+      </button>
+    </form>
+
+    <div class="login-footer">
+      <small class="text-muted">
+        Usuario por defecto: admin@sistema.com / admin123
+      </small>
+    </div>
+  </div>
+</div>

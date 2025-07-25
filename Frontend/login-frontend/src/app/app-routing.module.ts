@@ -1,0 +1,45 @@
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+
+// Components
+import { LoginComponent } from './auth/login/login.component';
+import { AdminDashboardComponent } from './admin/dashboard/admin-dashboard.component';
+import { UserDashboardComponent } from './user/dashboard/user-dashboard.component';
+import { ListaUsuariosComponent } from './admin/usuarios/lista-usuarios/lista-usuarios.component';
+
+// Guards
+import { AuthGuard } from './auth/auth.guard';
+import { AdminGuard } from './auth/admin.guard';
+
+const routes: Routes = [
+  { path: '', redirectTo: '/login', pathMatch: 'full' },
+  { path: 'login', component: LoginComponent },
+  
+  // Admin Routes
+  { 
+    path: 'admin/dashboard', 
+    component: AdminDashboardComponent, 
+    canActivate: [AuthGuard, AdminGuard] 
+  },
+  { 
+    path: 'admin/usuarios', 
+    component: ListaUsuariosComponent, 
+    canActivate: [AuthGuard, AdminGuard] 
+  },
+  
+  // User Routes
+  { 
+    path: 'user/dashboard', 
+    component: UserDashboardComponent, 
+    canActivate: [AuthGuard] 
+  },
+  
+  // Catch all
+  { path: '**', redirectTo: '/login' }
+];
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule]
+})
+export class AppRoutingModule { }

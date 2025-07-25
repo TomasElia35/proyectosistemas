@@ -1,0 +1,27 @@
+Creación del login:
+Los usuarios únicamente se van a poder crear desde el usuario "administrador"
+Los usuarios se van a poder loguear con un email y con una clave la cual va a estar encriptada en la base de datos
+Dependiendo el rol correspondiente va a ser redirigido a un dashboard o a otro
+La creación del usuario se va a basar en estos puntos:
+CREATE TABLE ROL (
+    idRol INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL UNIQUE
+);
+
+CREATE TABLE USUARIO (
+    idUsuario INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    apellido VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE, -- Agregu茅 UNIQUE
+    clave VARCHAR(255) NOT NULL, -- Aument茅 a 255 para BCrypt
+    idRol INT NOT NULL,
+    activo BOOLEAN DEFAULT TRUE,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    creado_por INT NULL,
+    
+    FOREIGN KEY (idRol) REFERENCES ROL(idRol),
+    FOREIGN KEY (creado_por) REFERENCES USUARIO(idUsuario)
+);
+
+Backend se va a realizar con Spring Boot 
+Frontend se va a realizar con Angular

@@ -503,27 +503,70 @@ export class UserFormComponent implements OnInit {
     this.userForm.get('contrasena')?.updateValueAndValidity();
   }
 
-  cargarRoles(): void {
-    console.log('🔍 Cargando roles...');
-    
-    this.userService.obtenerTodosLosRoles().subscribe({
-      next: (response) => {
-        console.log('📋 Respuesta de roles:', response);
+cargarRoles(): void {
+  console.log('%c🔍 INICIANDO CARGA DE ROLES EN COMPONENTE', 'color: purple; font-weight: bold');
+  
+  // Verificar estado inicial
+  console.log('📊 Estado inicial del array roles:', this.roles);
+  console.log('📊 Longitud inicial:', this.roles.length);
+  
+  this.userService.obtenerTodosLosRoles().subscribe({
+    next: (response) => {
+      console.log('%c📋 RESPUESTA RECIBIDA EN COMPONENTE', 'color: green; font-weight: bold');
+      console.log('📦 Response:', response);
+      
+      if (response && response.exito) {
+        console.log('✅ Respuesta exitosa');
+        console.log('📋 Datos recibidos:', response.datos);
+        console.log('📊 Tipo de datos:', typeof response.datos);
+        console.log('📊 Es array?', Array.isArray(response.datos));
         
-        if (response.exito) {
+        if (Array.isArray(response.datos)) {
+          // ASIGNACIÓN CRÍTICA
           this.roles = response.datos;
-          console.log('✅ Roles cargados:', this.roles);
+          
+          console.log('✅ Roles asignados al componente');
+          console.log('📊 Nueva longitud del array:', this.roles.length);
+          console.log('📋 Roles en el componente:');
+          
+          this.roles.forEach((rol, index) => {
+            console.log(`   ${index + 1}. ID: ${rol.id}, Nombre: ${rol.nombre}`);
+          });
+          
+          // Verificar que los roles tengan las propiedades correctas
+          if (this.roles.length > 0) {
+            const primerRol = this.roles[0];
+            console.log('🔍 Estructura del primer rol:');
+            console.log('   Tiene id?', primerRol.hasOwnProperty('id'));
+            console.log('   Tiene nombre?', primerRol.hasOwnProperty('nombre'));
+            console.log('   ID es número?', typeof primerRol.id === 'number');
+            console.log('   Nombre es string?', typeof primerRol.nombre === 'string');
+          }
+          
+          // Limpiar mensaje de error si existía
+          this.errorMessage = '';
+          
         } else {
-          console.log('❌ Error en respuesta de roles:', response.mensaje);
-          this.errorMessage = 'Error al cargar los roles: ' + response.mensaje;
+          console.error('❌ response.datos no es un array');
+          console.error('   Tipo recibido:', typeof response.datos);
+          console.error('   Valor:', response.datos);
+          this.errorMessage = 'Error: Los datos de roles no tienen el formato correcto';
         }
-      },
-      error: (error) => {
-        console.log('💥 Error al cargar roles:', error);
-        this.errorMessage = 'Error al cargar los roles: ' + error;
+        
+      } else {
+        console.error('❌ Respuesta no exitosa');
+        console.error('   response.exito:', response?.exito);
+        console.error('   response.mensaje:', response?.mensaje);
+        this.errorMessage = 'Error al cargar los roles: ' + (response?.mensaje || 'Respuesta inválida');
       }
-    });
-  }
+    },
+    error: (error) => {
+      console.log('%c💥 ERROR EN COMPONENTE', 'color: red; font-weight: bold');
+      console.error('🚨 Error:', error);
+      this.errorMessage = 'Error al cargar los roles: ' + error;
+    }
+  });
+}
 
   cargarDatosUsuario(): void {
     if (!this.userId) return;

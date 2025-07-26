@@ -78,17 +78,100 @@ export class UserService {
   }
 
   // Obtener todos los roles
-  obtenerTodosLosRoles(): Observable<ApiResponseDTO> {
-    console.log('🔍 UserService: Obteniendo roles desde:', `${this.API_URL}/roles`);
-    
-    return this.http.get<ApiResponseDTO>(`${this.API_URL}/roles`)
-      .pipe(
-        tap(response => {
-          console.log('📋 UserService: Respuesta de roles recibida:', response);
-        }),
-        catchError(this.handleError)
-      );
+// Obtener todos los roles - VERSION CON DEBUG COMPLETO
+obtenerTodosLosRoles(): Observable<ApiResponseDTO> {
+  console.log('%c🔍 INICIANDO PETICIÓN DE ROLES', 'color: blue; font-weight: bold');
+  console.log('🌐 URL completa:', `${this.API_URL}/roles`);
+  console.log('🔧 API_URL base:', this.API_URL);
+  
+  // Verificar token
+  const token = localStorage.getItem('token');
+  console.log('🔐 Token disponible:', token ? 'SÍ' : 'NO');
+  
+  // Verificar usuario
+  const currentUser = localStorage.getItem('currentUser');
+  if (currentUser) {
+    try {
+      const user = JSON.parse(currentUser);
+      console.log('👤 Usuario actual:', user.nombre, user.apellido);
+      console.log('🎭 Rol del usuario:', user.rol?.nombre);
+    } catch (e) {
+      console.error('❌ Error al parsear usuario actual:', e);
+    }
   }
+  
+  return this.http.get<ApiResponseDTO>(`${this.API_URL}/roles`)
+    .pipe(
+      tap(response => {
+        console.log('%c📋 RESPUESTA RECIBIDA', 'color: green; font-weight: bold');
+        console.log('📦 Respuesta completa:', response);
+        console.log('📊 Tipo de respuesta:', typeof response);
+        
+        // Verificar estructura de la respuesta
+        if (response) {
+          console.log('🔍 Propiedades de la respuesta:');
+          Object.keys(response).forEach(key => {
+            console.log(`   ${key}:`, response[key as keyof ApiResponseDTO]);
+          });
+          
+          if (response.exito !== undefined) {
+            console.log('✅ Estructura ApiResponseDTO detectada');
+            console.log('   exito:', response.exito);
+            console.log('   mensaje:', response.mensaje);
+            console.log('   datos:', response.datos);
+            
+            if (response.exito) {
+              if (response.datos && Array.isArray(response.datos)) {
+                console.log('📊 Cantidad de roles en datos:', response.datos.length);
+                response.datos.forEach((rol: any, index: number) => {
+                  console.log(`   Rol ${index + 1}:`, {
+                    id: rol.id,
+                    nombre: rol.nombre,
+                    tipo: typeof rol
+                  });
+                });
+                
+                if (response.datos.length === 0) {
+                  console.warn('⚠️ Array de roles está vacío');
+                }
+              } else {
+                console.error('❌ response.datos no es un array:', typeof response.datos, response.datos);
+              }
+            } else {
+              console.error('❌ response.exito es false:', response.mensaje);
+            }
+          } else {
+            console.error('❌ Respuesta no tiene estructura ApiResponseDTO');
+          }
+        } else {
+          console.error('❌ Respuesta es null o undefined');
+        }
+      }),
+      catchError((error) => {
+        console.log('%c💥 ERROR EN PETICIÓN', 'color: red; font-weight: bold');
+        console.error('🚨 Error completo:', error);
+        console.error('📊 Status:', error.status);
+        console.error('🌐 URL que falló:', error.url);
+        console.error('📝 Mensaje:', error.message);
+        console.error('📦 Error body:', error.error);
+        
+        // Análisis específico del error
+        if (error.status === 0) {
+          console.error('💀 Error de conectividad - Backend no disponible');
+        } else if (error.status === 401) {
+          console.error('🔐 Error de autenticación - Token inválido');
+        } else if (error.status === 403) {
+          console.error('🚫 Error de autorización - Sin permisos');
+        } else if (error.status === 404) {
+          console.error('🔍 Endpoint no encontrado');
+        } else if (error.status >= 500) {
+          console.error('🖥️ Error del servidor');
+        }
+        
+        return this.handleError(error);
+      })
+    );
+}
 
   private handleError = (error: HttpErrorResponse): Observable<never> => {
     console.error('Error en UserService:', error);

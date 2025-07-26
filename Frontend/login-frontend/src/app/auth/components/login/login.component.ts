@@ -28,7 +28,6 @@ export class LoginComponent {
     });
   }
 
-  // Getters para facilitar el acceso a los controles del formulario
   get mail() {
     return this.loginForm.get('mail');
   }
@@ -53,13 +52,29 @@ export class LoginComponent {
           this.isLoading = false;
           this.successMessage = response.mensaje || 'Login exitoso';
           
+          console.log('🎯 Rol del usuario logueado:', response.usuario.rol.nombre);
+          
           // Mostrar mensaje de éxito brevemente antes de redirigir
           setTimeout(() => {
-            // Redirigir según el rol del usuario
-            if (response.usuario.rol.nombre === 'ADMINISTRADOR') {
-              this.router.navigate(['/admin/dashboard']);
-            } else {
-              this.router.navigate(['/dashboard']);
+            // Redirigir según el rol del usuario (ROLES ACTUALIZADOS)
+            const rolUsuario = response.usuario.rol.nombre.toUpperCase();
+            
+            switch (rolUsuario) {
+              case 'ADMINISTRADOR':
+                console.log('🔑 Redirigiendo a admin dashboard');
+                this.router.navigate(['/admin/dashboard']);
+                break;
+              case 'TECNICO':
+                console.log('🔧 Redirigiendo a dashboard de técnico');
+                this.router.navigate(['/dashboard']); // Puedes crear una ruta específica para técnicos
+                break;
+              case 'CLIENTE':
+                console.log('🙋‍♂️ Redirigiendo a dashboard de cliente');
+                this.router.navigate(['/dashboard']);
+                break;
+              default:
+                console.log('👤 Rol no reconocido, redirigiendo a dashboard general');
+                this.router.navigate(['/dashboard']);
             }
           }, 1500);
         },
@@ -69,7 +84,6 @@ export class LoginComponent {
         }
       });
     } else {
-      // Marcar todos los campos como tocados para mostrar errores
       this.markFormGroupTouched();
     }
   }
@@ -81,19 +95,16 @@ export class LoginComponent {
     });
   }
 
-  // Método para limpiar mensajes
   clearMessages(): void {
     this.errorMessage = '';
     this.successMessage = '';
   }
 
-  // Método para verificar si un campo específico tiene errores
   hasFieldError(fieldName: string, errorType: string): boolean {
     const field = this.loginForm.get(fieldName);
     return !!(field?.hasError(errorType) && field?.touched);
   }
 
-  // Método para obtener el mensaje de error específico de un campo
   getFieldErrorMessage(fieldName: string): string {
     const field = this.loginForm.get(fieldName);
     

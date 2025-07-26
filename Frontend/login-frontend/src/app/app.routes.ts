@@ -1,45 +1,30 @@
 // src/app/app.routes.ts
 import { Routes } from '@angular/router';
 
-// Components
-import { LoginComponent } from './auth/login/login.component';
-import { AdminDashboardComponent } from './admin/dashboard/admin-dashboard.component';
-import { UserDashboardComponent } from './user/dashboard/user-dashboard.component';
-import { ListaUsuariosComponent } from './admin/usuarios/lista-usuarios/lista-usuarios.component';
-import { CrearUsuarioComponent } from './admin/usuarios/crear-usuario/crear-usuario.component';
+// Components - Rutas corregidas según tu estructura real
+import { LoginComponent } from './auth/components/login/login.component';
 
-// Guards
-import { AuthGuard } from './auth/auth.guard';
-import { AdminGuard } from './auth/admin.guard';
+// Guards - Rutas corregidas según tu estructura real
+import { AuthGuard } from './auth/guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   
-  // Admin Routes
+  // Dashboard general (para usuarios normales)
   { 
-    path: 'admin/dashboard', 
-    component: AdminDashboardComponent, 
-    canActivate: [AuthGuard, AdminGuard] 
-  },
-  { 
-    path: 'admin/usuarios', 
-    component: ListaUsuariosComponent, 
-    canActivate: [AuthGuard, AdminGuard] 
-  },
-  { 
-    path: 'admin/usuarios/crear', 
-    component: CrearUsuarioComponent, 
-    canActivate: [AuthGuard, AdminGuard] 
-  },
-  
-  // User Routes
-  { 
-    path: 'user/dashboard', 
-    component: UserDashboardComponent, 
+    path: 'dashboard', 
+    loadComponent: () => import('./features/dashboard/components/dashboard/dashboard.component').then(c => c.DashboardComponent),
     canActivate: [AuthGuard] 
   },
   
-  // Catch all
+  // Admin Dashboard
+  { 
+    path: 'admin/dashboard', 
+    loadComponent: () => import('./features/dashboard/components/dashboard/admin-dashboard.component').then(c => c.AdminDashboardComponent),
+    canActivate: [AuthGuard] 
+  },
+  
+  // Catch all - redirige a login si la ruta no existe
   { path: '**', redirectTo: '/login' }
 ];

@@ -12,6 +12,7 @@ import { LoginComponent } from './auth/login/login.component';
 // Admin Components
 import { AdminDashboardComponent } from './admin/dashboard/admin-dashboard.component';
 import { ListaUsuariosComponent } from './admin/usuarios/lista-usuarios/lista-usuarios.component';
+import { CrearUsuarioComponent } from './admin/usuarios/crear-usuario/crear-usuario.component';
 
 // User Components
 import { UserDashboardComponent } from './user/dashboard/user-dashboard.component';
@@ -25,6 +26,7 @@ import { AuthInterceptor } from './shared/interceptors/auth.interceptor';
     LoginComponent,
     AdminDashboardComponent,
     ListaUsuariosComponent,
+    CrearUsuarioComponent,
     UserDashboardComponent
   ],
   imports: [

@@ -1,0 +1,146 @@
+<!-- src/app/admin/usuarios/crear-usuario/crear-usuario.component.html -->
+<div class="usuarios-container">
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <h3>Crear Usuario</h3>
+    </div>
+    <div class="navbar-user">
+      <button class="btn btn-outline-light btn-sm mr-2" (click)="volver()">
+        ← Usuarios
+      </button>
+      <span class="user-info">{{ currentUser?.nombre }} {{ currentUser?.apellido }}</span>
+      <button class="btn btn-outline-danger btn-sm ml-2" (click)="logout()">
+        Cerrar Sesión
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="container">
+      <div class="content-header">
+        <h1>Crear Nuevo Usuario</h1>
+      </div>
+
+      <!-- Error -->
+      <div *ngIf="error" class="alert alert-danger">
+        {{ error }}
+      </div>
+
+      <!-- Form -->
+      <div class="form-container">
+        <form [formGroup]="usuarioForm" (ngSubmit)="onSubmit()">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="nombre">Nombre *</label>
+                <input 
+                  type="text" 
+                  id="nombre"
+                  formControlName="nombre" 
+                  class="form-control"
+                  [class.is-invalid]="usuarioForm.get('nombre')?.invalid && usuarioForm.get('nombre')?.touched">
+                <div *ngIf="usuarioForm.get('nombre')?.invalid && usuarioForm.get('nombre')?.touched" class="invalid-feedback">
+                  <div *ngIf="usuarioForm.get('nombre')?.errors?.['required']">El nombre es requerido</div>
+                  <div *ngIf="usuarioForm.get('nombre')?.errors?.['minlength']">Mínimo 2 caracteres</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="apellido">Apellido *</label>
+                <input 
+                  type="text" 
+                  id="apellido"
+                  formControlName="apellido" 
+                  class="form-control"
+                  [class.is-invalid]="usuarioForm.get('apellido')?.invalid && usuarioForm.get('apellido')?.touched">
+                <div *ngIf="usuarioForm.get('apellido')?.invalid && usuarioForm.get('apellido')?.touched" class="invalid-feedback">
+                  <div *ngIf="usuarioForm.get('apellido')?.errors?.['required']">El apellido es requerido</div>
+                  <div *ngIf="usuarioForm.get('apellido')?.errors?.['minlength']">Mínimo 2 caracteres</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="mail">Email *</label>
+                <input 
+                  type="email" 
+                  id="mail"
+                  formControlName="mail" 
+                  class="form-control"
+                  [class.is-invalid]="usuarioForm.get('mail')?.invalid && usuarioForm.get('mail')?.touched">
+                <div *ngIf="usuarioForm.get('mail')?.invalid && usuarioForm.get('mail')?.touched" class="invalid-feedback">
+                  <div *ngIf="usuarioForm.get('mail')?.errors?.['required']">El email es requerido</div>
+                  <div *ngIf="usuarioForm.get('mail')?.errors?.['email']">Email inválido</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="contrasena">Contraseña *</label>
+                <input 
+                  type="password" 
+                  id="contrasena"
+                  formControlName="contrasena" 
+                  class="form-control"
+                  [class.is-invalid]="usuarioForm.get('contrasena')?.invalid && usuarioForm.get('contrasena')?.touched">
+                <div *ngIf="usuarioForm.get('contrasena')?.invalid && usuarioForm.get('contrasena')?.touched" class="invalid-feedback">
+                  <div *ngIf="usuarioForm.get('contrasena')?.errors?.['required']">La contraseña es requerida</div>
+                  <div *ngIf="usuarioForm.get('contrasena')?.errors?.['minlength']">Mínimo 6 caracteres</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="rol">Rol *</label>
+                <select 
+                  id="rol"
+                  formControlName="rol" 
+                  class="form-control"
+                  [class.is-invalid]="usuarioForm.get('rol')?.invalid && usuarioForm.get('rol')?.touched">
+                  <option value="">Seleccionar rol</option>
+                  <option *ngFor="let rol of roles" [value]="rol.id">{{ rol.nombre }}</option>
+                </select>
+                <div *ngIf="usuarioForm.get('rol')?.invalid && usuarioForm.get('rol')?.touched" class="invalid-feedback">
+                  <div *ngIf="usuarioForm.get('rol')?.errors?.['required']">El rol es requerido</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="checkbox-label">
+                  <input 
+                    type="checkbox" 
+                    formControlName="estado" 
+                    class="form-checkbox">
+                  Usuario activo
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary mr-2" (click)="volver()" [disabled]="loading">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary" [disabled]="loading || usuarioForm.invalid">
+              <span *ngIf="loading" class="spinner mr-2"></span>
+              {{ loading ? 'Creando...' : 'Crear Usuario' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

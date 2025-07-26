@@ -1,8 +1,14 @@
-package login.login.controlador;
+package login.login;
 
+import login.login.DTO.ApiResponseDTO;
+import login.login.modelo.Rol;
+import login.login.repositorio.RolRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/test")
@@ -45,5 +51,21 @@ public class TestController {
                 "  \"hash\": \"" + hash + "\",\n" +
                 "  \"matches\": " + matches + "\n" +
                 "}";
+    }
+    @Autowired
+    private RolRepository rolRepository;
+
+    @GetMapping("/roles")
+    public ResponseEntity<?> testRoles() {
+        try {
+            List<Rol> roles = rolRepository.findAll();
+            System.out.println("🔍 Roles encontrados: " + roles.size());
+
+            return ResponseEntity.ok(new ApiResponseDTO(true,
+                    "Roles obtenidos (TEST)", roles));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponseDTO(false, "Error: " + e.getMessage()));
+        }
     }
 }

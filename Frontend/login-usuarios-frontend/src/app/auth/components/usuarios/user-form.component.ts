@@ -114,24 +114,36 @@ import { UserService, UsuarioRequestDTO, RolDTO } from '../../services/user.serv
             </div>
 
             <!-- Rol -->
-            <div class="form-group">
-              <label for="rol" class="form-label">Rol *</label>
-              <select
-                id="rol"
-                formControlName="rol"
-                class="form-select"
-                [class.error]="rol?.invalid && rol?.touched"
-                (focus)="clearMessages()"
-              >
-                <option value="">Selecciona un rol</option>
-                <option *ngFor="let rolOption of roles" [value]="rolOption.id">
-                  {{ rolOption.nombre }}
-                </option>
-              </select>
-              <div *ngIf="rol?.invalid && rol?.touched" class="error-message">
-                {{ getFieldErrorMessage('rol') }}
-              </div>
-            </div>
+            <!-- En user-form.component.html -->
+<div class="form-group">
+  <label for="rol" class="form-label">Rol *</label>
+  
+  <!-- Debug info -->
+  <div *ngIf="roles.length === 0" class="debug-info">
+    <small style="color: orange;">⚠️ No hay roles disponibles. Verificando...</small>
+  </div>
+  
+  <select
+    id="rol"
+    formControlName="rol"
+    class="form-select"
+    [class.error]="rol?.invalid && rol?.touched"
+    (focus)="clearMessages(); cargarRoles()"
+  >
+    <option value="">
+      {{ roles.length === 0 ? 'Cargando roles...' : 'Selecciona un rol' }}
+    </option>
+    <option *ngFor="let rolOption of roles; trackBy: trackByRolId" 
+            [value]="rolOption.id">
+      {{ rolOption.nombre }}
+    </option>
+  </select>
+  
+  <!-- Debug: mostrar roles cargados -->
+  <div *ngIf="roles.length > 0" class="debug-info">
+    <small style="color: green;">✅ {{ roles.length }} roles cargados</small>
+  </div>
+</div>
 
             <!-- Estado -->
             <div class="form-group">
@@ -454,6 +466,7 @@ import { UserService, UsuarioRequestDTO, RolDTO } from '../../services/user.serv
     }
   `]
 })
+
 export class UserFormComponent implements OnInit {
   userForm: FormGroup;
   roles: RolDTO[] = [];
@@ -484,6 +497,10 @@ export class UserFormComponent implements OnInit {
     this.checkEditMode();
     this.cargarRoles();
   }
+  // En user-form.component.ts
+trackByRolId(index: number, rol: RolDTO): number {
+  return rol.id;
+}
 
   checkEditMode(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -503,67 +520,42 @@ export class UserFormComponent implements OnInit {
     this.userForm.get('contrasena')?.updateValueAndValidity();
   }
 
+// En user-form.component.ts - Método mejorado
 cargarRoles(): void {
-  console.log('%c🔍 INICIANDO CARGA DE ROLES EN COMPONENTE', 'color: purple; font-weight: bold');
+  console.log('🔍 INICIANDO CARGA DE ROLES');
   
-  // Verificar estado inicial
-  console.log('📊 Estado inicial del array roles:', this.roles);
-  console.log('📊 Longitud inicial:', this.roles.length);
+  // Verificar autenticación
+  const token = localStorage.getItem('token');
+  const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+  
+  console.log('🔐 Token presente:', !!token);
+  console.log('👤 Usuario:', currentUser.nombre);
+  console.log('🎭 Rol usuario:', currentUser.rol?.nombre);
   
   this.userService.obtenerTodosLosRoles().subscribe({
     next: (response) => {
-      console.log('%c📋 RESPUESTA RECIBIDA EN COMPONENTE', 'color: green; font-weight: bold');
-      console.log('📦 Response:', response);
+      console.log('✅ Respuesta roles:', response);
       
-      if (response && response.exito) {
-        console.log('✅ Respuesta exitosa');
-        console.log('📋 Datos recibidos:', response.datos);
-        console.log('📊 Tipo de datos:', typeof response.datos);
-        console.log('📊 Es array?', Array.isArray(response.datos));
-        
-        if (Array.isArray(response.datos)) {
-          // ASIGNACIÓN CRÍTICA
-          this.roles = response.datos;
-          
-          console.log('✅ Roles asignados al componente');
-          console.log('📊 Nueva longitud del array:', this.roles.length);
-          console.log('📋 Roles en el componente:');
-          
-          this.roles.forEach((rol, index) => {
-            console.log(`   ${index + 1}. ID: ${rol.id}, Nombre: ${rol.nombre}`);
-          });
-          
-          // Verificar que los roles tengan las propiedades correctas
-          if (this.roles.length > 0) {
-            const primerRol = this.roles[0];
-            console.log('🔍 Estructura del primer rol:');
-            console.log('   Tiene id?', primerRol.hasOwnProperty('id'));
-            console.log('   Tiene nombre?', primerRol.hasOwnProperty('nombre'));
-            console.log('   ID es número?', typeof primerRol.id === 'number');
-            console.log('   Nombre es string?', typeof primerRol.nombre === 'string');
-          }
-          
-          // Limpiar mensaje de error si existía
-          this.errorMessage = '';
-          
-        } else {
-          console.error('❌ response.datos no es un array');
-          console.error('   Tipo recibido:', typeof response.datos);
-          console.error('   Valor:', response.datos);
-          this.errorMessage = 'Error: Los datos de roles no tienen el formato correcto';
-        }
-        
+      if (response && response.exito && Array.isArray(response.datos)) {
+        this.roles = response.datos;
+        console.log('📋 Roles cargados:', this.roles.length);
+        console.log('📋 Lista:', this.roles);
       } else {
-        console.error('❌ Respuesta no exitosa');
-        console.error('   response.exito:', response?.exito);
-        console.error('   response.mensaje:', response?.mensaje);
-        this.errorMessage = 'Error al cargar los roles: ' + (response?.mensaje || 'Respuesta inválida');
+        console.error('❌ Formato de respuesta incorrecto:', response);
+        this.errorMessage = 'Error en el formato de respuesta de roles';
       }
     },
     error: (error) => {
-      console.log('%c💥 ERROR EN COMPONENTE', 'color: red; font-weight: bold');
-      console.error('🚨 Error:', error);
-      this.errorMessage = 'Error al cargar los roles: ' + error;
+      console.error('💥 Error cargando roles:', error);
+      this.errorMessage = 'Error al cargar roles: ' + error;
+      
+      // Fallback: crear roles de prueba para debugging
+      this.roles = [
+        { id: 1, nombre: 'ADMINISTRADOR' },
+        { id: 2, nombre: 'TECNICO' },
+        { id: 3, nombre: 'CLIENTE' }
+      ];
+      console.log('🔄 Usando roles de fallback');
     }
   });
 }

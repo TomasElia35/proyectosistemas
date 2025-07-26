@@ -39,6 +39,30 @@ import { AuthService, UsuarioResponsiveDTO } from '../../../../auth/services/aut
             </div>
           </div>
 
+                    <div class="module-card" (click)="navegarA('/admin/insumos')">
+            <div class="module-icon">📦</div>
+            <div class="module-content">
+              <h3>Gestión de Insumos</h3>
+              <p>Administrar inventario, stock y control de insumos</p>
+              <div class="module-actions">
+                <span class="action-link">Ver insumos →</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="module-card" (click)="navegarA('/admin/insumos')" [class.highlight]="hayInsumosStockBajo">
+            <div class="module-icon">⚠️</div>
+            <div class="module-content">
+              <h3>Alertas de Stock</h3>
+              <p>Monitorear insumos con stock bajo o crítico</p>
+              <div class="module-actions">
+                <span class="action-link" [class.urgent]="hayInsumosStockBajo">
+                  {{ hayInsumosStockBajo ? 'Revisar urgente →' : 'Sin alertas →' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
           <div class="module-card">
             <div class="module-icon">🛠️</div>
             <div class="module-content">

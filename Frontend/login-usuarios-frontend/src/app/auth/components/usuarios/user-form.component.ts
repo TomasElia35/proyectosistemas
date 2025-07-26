@@ -496,6 +496,7 @@ export class UserFormComponent implements OnInit {
   ngOnInit(): void {
     this.checkEditMode();
     this.cargarRoles();
+    this.testTokenManually();
   }
   // En user-form.component.ts
 trackByRolId(index: number, rol: RolDTO): number {
@@ -558,6 +559,34 @@ cargarRoles(): void {
       console.log('🔄 Usando roles de fallback');
     }
   });
+}
+
+// MÉTODO TEMPORAL PARA DEBUG
+testTokenManually(): void {
+  const token = localStorage.getItem('token');
+  console.log('🧪 Testing token manually...');
+  console.log('🔐 Token:', token);
+  
+  if (token) {
+    // Test manual con fetch
+    fetch('http://localhost:8080/api/admin/roles', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => {
+      console.log('📊 Response status:', response.status);
+      return response.json();
+    })
+    .then(data => {
+      console.log('📦 Response data:', data);
+    })
+    .catch(error => {
+      console.error('💥 Fetch error:', error);
+    });
+  }
 }
 
   cargarDatosUsuario(): void {

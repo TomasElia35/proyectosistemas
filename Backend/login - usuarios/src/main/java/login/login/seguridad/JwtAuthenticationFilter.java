@@ -44,6 +44,36 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (Exception e) {
             logger.error("No se puede establecer la autenticación del usuario: {}", e);
         }
+        System.out.println("🔍 JWT Filter - URL: " + request.getRequestURL());
+
+        try {
+            String jwt = parseJwt(request);
+            System.out.println("🔐 Token extraído: " + (jwt != null ? "PRESENTE" : "AUSENTE"));
+
+            if (jwt != null) {
+                System.out.println("🔐 Token (30 chars): " + jwt.substring(0, Math.min(30, jwt.length())) + "...");
+                boolean isValid = jwtUtils.validateJwtToken(jwt);
+                System.out.println("✅ Token válido: " + isValid);
+
+                if (isValid) {
+                    String username = jwtUtils.getUserNameFromJwtToken(jwt);
+                    System.out.println("👤 Username del token: " + username);
+
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    System.out.println("🎭 Authorities: " + userDetails.getAuthorities());
+
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    System.out.println("✅ Autenticación establecida correctamente");
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("❌ Error en JWT Filter: " + e.getMessage());
+            e.printStackTrace();
+        }
 
         filterChain.doFilter(request, response);
     }

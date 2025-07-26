@@ -1,5 +1,6 @@
 // src/app/admin/usuarios/lista-usuarios/lista-usuarios.component.ts
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { UsuarioService } from '../usuario.service';
 import { AuthService } from '../../../auth/auth.service';
@@ -7,6 +8,8 @@ import { Usuario } from '../../../shared/models/usuario.model';
 
 @Component({
   selector: 'app-lista-usuarios',
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './lista-usuarios.component.html',
   styleUrls: ['./lista-usuarios.component.css']
 })

@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS, provideHttpClient, withInterceptors } from '@angular/common/http';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -18,7 +18,7 @@ import { CrearUsuarioComponent } from './admin/usuarios/crear-usuario/crear-usua
 import { UserDashboardComponent } from './user/dashboard/user-dashboard.component';
 
 // Interceptors
-import { AuthInterceptor } from './shared/interceptors/auth.interceptor';
+import { authInterceptor } from './shared/interceptors/auth.interceptor';
 
 @NgModule({
   declarations: [
@@ -37,11 +37,9 @@ import { AuthInterceptor } from './shared/interceptors/auth.interceptor';
     HttpClientModule
   ],
   providers: [
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: AuthInterceptor,
-      multi: true
-    }
+    provideHttpClient(
+      withInterceptors([authInterceptor])  // ✅ registrar interceptor como función
+    )
   ],
   bootstrap: [AppComponent]
 })

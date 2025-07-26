@@ -1,14 +1,17 @@
 // src/app/admin/usuarios/crear-usuario/crear-usuario.component.ts
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { UsuarioService } from '../usuario.service';
 import { AuthService } from '../../../auth/auth.service';
-import { UsuarioRequest } from '../../../shared/models/usuario.model';
+import { UsuarioRequest, Usuario } from '../../../shared/models/usuario.model';
 import { Rol } from '../../../shared/models/rol.model';
 
 @Component({
   selector: 'app-crear-usuario',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './crear-usuario.component.html',
   styleUrls: ['./crear-usuario.component.css']
 })
@@ -17,7 +20,7 @@ export class CrearUsuarioComponent implements OnInit {
   loading = false;
   error = '';
   roles: Rol[] = [];
-  currentUser = this.authService.currentUserValue;
+  currentUser: Usuario | null = null;
 
   constructor(
     private formBuilder: FormBuilder,
@@ -27,6 +30,7 @@ export class CrearUsuarioComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.currentUser = this.authService.currentUserValue;
     this.initForm();
     this.cargarRoles();
   }

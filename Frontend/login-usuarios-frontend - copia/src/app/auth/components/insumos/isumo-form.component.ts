@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { InsumoService, InsumoRequestDTO } from '../../services/insumo.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-insumo-form',
@@ -261,7 +262,7 @@ import { InsumoService, InsumoRequestDTO } from '../../services/insumo.service';
                     <span *ngIf="insumoForm.get('unidadMedida')?.value">{{ insumoForm.get('unidadMedida')?.value }}</span>
                   </div>
                   <div class="preview-price" *ngIf="insumoForm.get('precio')?.value">
-                    <strong>${{ insumoForm.get('precio')?.value | number:'1.2-2' }}</strong>
+                    <strong>\${{ insumoForm.get('precio')?.value | number:'1.2-2' }}</strong>
                   </div>
                 </div>
               </div>
@@ -729,10 +730,12 @@ export class InsumoFormComponent implements OnInit {
   isSubmitting = false;
   successMessage = '';
   errorMessage = '';
+  isAdmin = false;
 
   constructor(
     private fb: FormBuilder,
     private insumoService: InsumoService,
+    private authService: AuthService,
     private router: Router,
     private route: ActivatedRoute
   ) {
@@ -751,9 +754,16 @@ export class InsumoFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.checkAdminRole();
     this.checkEditMode();
     this.cargarCategorias();
     this.cargarProveedores();
+  }
+
+  checkAdminRole(): void {
+    this.authService.currentUser$.subscribe(user => {
+      this.isAdmin = user?.rol?.nombre === 'ADMINISTRADOR';
+    });
   }
 
   checkEditMode(): void {
@@ -885,7 +895,7 @@ export class InsumoFormComponent implements OnInit {
             this.successMessage = response.mensaje;
             // Redirigir después de 2 segundos
             setTimeout(() => {
-              this.router.navigate(['/admin/insumos']);
+              this.volver();
             }, 2000);
           } else {
             this.errorMessage = response.mensaje;
@@ -909,7 +919,11 @@ export class InsumoFormComponent implements OnInit {
   }
 
   volver(): void {
-    this.router.navigate(['/admin/insumos']);
+    if (this.isAdmin) {
+      this.router.navigate(['/admin/insumos']);
+    } else {
+      this.router.navigate(['/insumos']);
+    }
   }
 
   clearMessages(): void {

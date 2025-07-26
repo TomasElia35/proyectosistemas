@@ -43,6 +43,30 @@ export const routes: Routes = [
     canActivate: [AuthGuard, AdminGuard]
   },
   
+  // Gestión de Insumos (requieren autenticación, algunos solo admin)
+  {
+    path: 'admin/insumos',
+    loadComponent: () => import('./auth/components/insumos/isumo-list.component').then(c => c.InsumoListComponent),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'admin/insumos/crear',
+    loadComponent: () => import('./auth/components/insumos/isumo-form.component').then(c => c.InsumoFormComponent),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'admin/insumos/editar/:id',
+    loadComponent: () => import('./auth/components/insumos/isumo-form.component').then(c => c.InsumoFormComponent),
+    canActivate: [AuthGuard]
+  },
+  
+  // Rutas de insumos para usuarios normales (solo lectura y actualización de stock)
+  {
+    path: 'insumos',
+    loadComponent: () => import('./auth/components/insumos/isumo-list.component').then(c => c.InsumoListComponent),
+    canActivate: [AuthGuard]
+  },
+  
   // Catch all - redirige a login si la ruta no existe
   { path: '**', redirectTo: '/login' }
 ];

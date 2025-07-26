@@ -914,4 +914,18 @@ import { AuthService } from '../../services/auth.service';
       .filter-actions .btn {
         flex: 1;
       }
-  }]
+    }
+  `]
+})
+export class InsumoListComponent implements OnInit {
+  insumos: InsumoResponseDTO[] = [];
+  insumosFiltered: InsumoResponseDTO[] = [];
+  categorias: string[] = [];
+  proveedores: string[] = [];
+  
+  filtros: InsumoFiltroDTO = {
+    nombre: '',
+    categoria: '',
+    proveedor: '',
+    estado: undefined,
+    soloStockBajo: false

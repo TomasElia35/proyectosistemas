@@ -1,0 +1,76 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <h2>Iniciar Sesión</h2>
+      <p>Ingresa tus credenciales para acceder al sistema</p>
+    </div>
+
+    <!-- Mensajes de éxito y error -->
+    <div class="messages">
+      <div *ngIf="successMessage" class="alert alert-success">
+        <i class="icon-success">✓</i>
+        {{ successMessage }}
+      </div>
+      
+      <div *ngIf="errorMessage" class="alert alert-error">
+        <i class="icon-error">⚠</i>
+        {{ errorMessage }}
+      </div>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      <!-- Campo Email -->
+      <div class="form-group">
+        <label for="mail" class="form-label">Correo Electrónico</label>
+        <input
+          type="email"
+          id="mail"
+          formControlName="mail"
+          class="form-input"
+          [class.error]="mail?.invalid && mail?.touched"
+          placeholder="ejemplo@correo.com"
+          (focus)="clearMessages()"
+        >
+        <div *ngIf="mail?.invalid && mail?.touched" class="error-message">
+          {{ getFieldErrorMessage('mail') }}
+        </div>
+      </div>
+
+      <!-- Campo Contraseña -->
+      <div class="form-group">
+        <label for="contrasena" class="form-label">Contraseña</label>
+        <input
+          type="password"
+          id="contrasena"
+          formControlName="contrasena"
+          class="form-input"
+          [class.error]="contrasena?.invalid && contrasena?.touched"
+          placeholder="••••••••"
+          (focus)="clearMessages()"
+        >
+        <div *ngIf="contrasena?.invalid && contrasena?.touched" class="error-message">
+          {{ getFieldErrorMessage('contrasena') }}
+        </div>
+      </div>
+
+      <!-- Botón de envío -->
+      <button
+        type="submit"
+        class="login-button"
+        [disabled]="isLoading"
+        [class.loading]="isLoading"
+      >
+        <span *ngIf="!isLoading">Iniciar Sesión</span>
+        <span *ngIf="isLoading" class="loading-content">
+          <div class="spinner"></div>
+          Iniciando sesión...
+        </span>
+      </button>
+    </form>
+
+    <!-- Footer opcional -->
+    <div class="login-footer">
+      <p>¿Problemas para acceder? Contacta al administrador</p>
+    </div>
+  </div>
+</div>

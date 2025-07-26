@@ -45,9 +45,21 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authz -> authz
+                        // Endpoints públicos (sin autenticación)
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/test/**").permitAll()  // ← LÍNEA AGREGADA
+                        .requestMatchers("/api/test/**").permitAll()
+
+                        // Endpoints solo para administradores
                         .requestMatchers("/api/admin/**").hasRole("ADMINISTRADOR")
+
+                        // Endpoints de insumos - requieren autenticación
+                        .requestMatchers("/api/insumos/**").authenticated()
+
+                        // Operaciones específicas que requieren rol de administrador
+                        .requestMatchers("DELETE", "/api/insumos/**").hasRole("ADMINISTRADOR")
+                        .requestMatchers("PATCH", "/api/insumos/*/estado").hasRole("ADMINISTRADOR")
+
+                        // Cualquier otra petición requiere autenticación
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
@@ -62,7 +74,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(Arrays.asList("*"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
 

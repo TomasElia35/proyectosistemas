@@ -1,0 +1,10 @@
+Field,Type,Null,Key,Default,Extra
+idUsuario,int,NO,PRI,NULL,auto_increment
+nombre,varchar(100),NO,,NULL,
+apellido,varchar(100),NO,,NULL,
+email,varchar(100),NO,UNI,NULL,
+clave,varchar(255),NO,,NULL,
+idRol,int,NO,MUL,NULL,
+activo,tinyint(1),YES,,1,
+fecha_creacion,timestamp,YES,,CURRENT_TIMESTAMP,DEFAULT_GENERATED
+creado_por,int,YES,MUL,NULL,

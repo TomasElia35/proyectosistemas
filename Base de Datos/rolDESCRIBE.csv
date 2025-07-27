@@ -1,0 +1,3 @@
+Field,Type,Null,Key,Default,Extra
+idRol,int,NO,PRI,NULL,auto_increment
+nombre,varchar(50),NO,UNI,NULL,

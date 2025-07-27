@@ -2,6 +2,8 @@ CREATE DATABASE gestorInsumo;
 
 USE gestorInsumo;
 
+Describe ROL;
+
 CREATE TABLE ROL (
     idRol INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(50) NOT NULL UNIQUE

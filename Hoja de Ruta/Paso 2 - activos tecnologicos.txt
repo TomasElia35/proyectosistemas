@@ -1,0 +1,346 @@
+Hoja de Ruta - Sistema de Gestión de Insumos Tecnológicos
+1. EQUIPOS Y HARDWARE
+Dispositivos Móviles (Celulares/Tablets)
+
+ID único del dispositivo
+Marca y modelo
+Número de serie/IMEI
+Número de teléfono (si aplica)
+Empleado asignado
+Sector
+Estado (Activo/Inactivo/En reparación)
+Fecha de asignación
+Observaciones
+
+Notebooks/Computadoras
+
+ID único del equipo
+Marca y modelo
+Número de serie
+Dirección IP
+Usuario del sistema
+Contraseña
+Empleado asignado
+Sector
+Estado (Activo/Inactivo/En reparación)
+Fecha de asignación
+Observaciones
+
+Impresoras
+
+ID único de la impresora
+Marca y modelo
+Número de serie
+Dirección IP
+Ubicación física
+Sector asignado
+Estado (Activo/Inactivo/En reparación)
+Fecha de instalación
+Observaciones
+
+Scanners
+
+ID único del scanner
+Marca y modelo
+Número de serie
+Dirección IP (si aplica)
+Empleado asignado
+Sector
+Estado (Activo/Inactivo/En reparación)
+Fecha de asignación
+Observaciones
+
+Teléfonos Internos
+
+ID único del teléfono
+Número interno
+Marca y modelo
+Ubicación física
+Empleado asignado
+Sector
+Estado (Activo/Inactivo/En reparación)
+Fecha de asignación
+Observaciones
+
+Monitores y Pantallas
+
+ID único del monitor
+Marca y modelo
+Número de serie
+Tamaño
+Empleado asignado
+Sector
+Estado (Activo/Inactivo/En reparación)
+Fecha de asignación
+Observaciones
+
+Equipos de Red (Routers/Switches)
+
+ID único del equipo
+Marca y modelo
+Número de serie
+Dirección IP
+Usuario administrador
+Contraseña administrador
+Ubicación física
+Sector
+Estado (Activo/Inactivo/En reparación)
+Fecha de instalación
+Observaciones
+
+Periféricos (Teclados/Mouse/Webcams)
+
+ID único del periférico
+Tipo (Teclado/Mouse/Webcam/Otro)
+Marca y modelo
+Empleado asignado
+Sector
+Estado (Activo/Inactivo/En reparación)
+Fecha de asignación
+Observaciones
+
+Equipos Audiovisuales (Proyectores)
+
+ID único del equipo
+Marca y modelo
+Número de serie
+Ubicación física
+Sector responsable
+Estado (Activo/Inactivo/En reparación)
+Fecha de instalación
+Observaciones
+
+Dispositivos de Almacenamiento
+
+ID único del dispositivo
+Tipo (Disco externo/USB/Otro)
+Marca y modelo
+Capacidad
+Empleado asignado
+Sector
+Estado (Activo/Inactivo/En reparación)
+Fecha de asignación
+Observaciones
+
+Equipos UPS/Estabilizadores
+
+ID único del equipo
+Marca y modelo
+Número de serie
+Potencia
+Ubicación física
+Sector
+Estado (Activo/Inactivo/En reparación)
+Fecha de instalación
+Observaciones
+
+Cámaras de Seguridad IP
+
+ID único de la cámara
+Marca y modelo
+Dirección IP
+Usuario administrador
+Contraseña administrador
+Ubicación física
+Sector responsable
+Estado (Activo/Inactivo/En reparación)
+Fecha de instalación
+Observaciones
+
+2. CREDENCIALES Y ACCESOS
+Correos Electrónicos
+
+Dirección de email
+Contraseña (texto plano)
+Empleado propietario
+Sector
+Tipo de cuenta (Personal/Compartida)
+Estado (Activo/Inactivo)
+Fecha de creación
+Observaciones
+
+Redes WiFi
+
+Nombre de la red (SSID)
+Contraseña
+Zona/Ubicación
+Tipo de seguridad (WPA2/WPA3/Otro)
+Sector responsable
+Estado (Activo/Inactivo)
+Fecha de configuración
+Observaciones
+
+Controladores de Cajas
+
+ID del controlador
+Dirección IP
+Usuario
+Contraseña
+Ubicación física
+Sector
+Estado (Activo/Inactivo)
+Fecha de configuración
+Observaciones
+
+Plataformas de Pago (Flow)
+
+Nombre de la plataforma
+Usuario
+Contraseña
+Email asociado
+Sector responsable
+Estado (Activo/Inactivo)
+Fecha de creación
+Observaciones
+
+Servicios de Streaming (Spotify)
+
+Nombre del servicio
+Usuario
+Contraseña
+Email asociado
+Tipo de cuenta (Individual/Familiar/Empresarial)
+Sector responsable
+Estado (Activo/Inactivo)
+Fecha de suscripción
+Observaciones
+
+Redes Sociales Corporativas
+
+Plataforma (LinkedIn/Facebook/Instagram)
+Nombre de usuario
+Contraseña
+Email asociado
+Sector responsable
+Estado (Activo/Inactivo)
+Fecha de creación
+Observaciones
+
+Almacenamiento en la Nube
+
+Servicio (Google Drive/Dropbox/OneDrive)
+Usuario/Email
+Contraseña
+Espacio contratado
+Sector responsable
+Estado (Activo/Inactivo)
+Fecha de suscripción
+Observaciones
+
+Sistemas Empresariales (CRM/ERP)
+
+Nombre del sistema
+URL de acceso
+Usuario
+Contraseña
+Empleado asignado
+Sector
+Rol/Permisos
+Estado (Activo/Inactivo)
+Fecha de asignación
+Observaciones
+
+Plataformas de Marketing
+
+Plataforma (Mailchimp/WhatsApp Business)
+Usuario
+Contraseña
+Email asociado
+Sector responsable
+Estado (Activo/Inactivo)
+Fecha de creación
+Observaciones
+
+Servicios Bancarios Empresariales
+
+Banco
+Usuario
+Contraseña
+Número de cuenta
+Sector responsable
+Estado (Activo/Inactivo)
+Fecha de alta
+Observaciones
+
+Servidores FTP
+
+Nombre del servidor
+Dirección IP/URL
+Puerto
+Usuario
+Contraseña
+Sector responsable
+Estado (Activo/Inactivo)
+Fecha de configuración
+Observaciones
+
+Plataformas de Delivery/Logística
+
+Plataforma
+Usuario
+Contraseña
+Email asociado
+Sector responsable
+Estado (Activo/Inactivo)
+Fecha de registro
+Observaciones
+
+3. LICENCIAS DE SOFTWARE
+Office/Microsoft 365
+
+Tipo de licencia
+Clave de producto
+Email asociado
+Empleado asignado
+Sector
+Fecha de vencimiento
+Estado (Activo/Vencido)
+Fecha de compra
+Observaciones
+
+Antivirus Corporativos
+
+Nombre del antivirus
+Clave de licencia
+Empleado/Equipo asignado
+Sector
+Fecha de vencimiento
+Estado (Activo/Vencido)
+Fecha de instalación
+Observaciones
+
+Software Especializado
+
+Nombre del software
+Versión
+Clave de licencia
+Empleado asignado
+Sector
+Fecha de vencimiento
+Estado (Activo/Vencido)
+Fecha de instalación
+Observaciones
+
+Licencias Adobe/AutoCAD
+
+Producto (Photoshop/AutoCAD/Otro)
+Tipo de licencia (Individual/Empresarial)
+Clave de producto
+Email asociado
+Empleado asignado
+Sector
+Fecha de vencimiento
+Estado (Activo/Vencido)
+Fecha de compra
+Observaciones
+
+
+CAMPOS COMUNES RECOMENDADOS
+
+Fecha de última actualización
+Usuario que realizó la última modificación
+Historial de cambios
+Código QR o Etiqueta (para identificación física)
+Proveedor/Fabricante
+Garantía (fecha de vencimiento)
+Costo/Valor

@@ -12,11 +12,11 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "INSUMO")
+@Table(name = "INSUMOS")
 public class Insumo {
 
     @Id
-    @Column(name = "idInsumo")
+    @Column(name = "id_insumo")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 

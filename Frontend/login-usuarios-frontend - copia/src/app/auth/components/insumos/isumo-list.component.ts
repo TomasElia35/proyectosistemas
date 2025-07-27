@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { InsumoService, InsumoResponseDTO, InsumoFiltroDTO, InsumoUpdateStockDTO } from '../../services/insumo.service';
 import { AuthService } from '../../services/auth.service';
@@ -928,4 +928,335 @@ export class InsumoListComponent implements OnInit {
     categoria: '',
     proveedor: '',
     estado: undefined,
-    soloStockBajo: false
+    soloStockBajo: false,
+    stockMinimo: undefined,
+    stockMaximo: undefined
+  };
+
+  // Estado de la UI
+  isLoading = false;
+  isProcessing = false;
+  successMessage = '';
+  errorMessage = '';
+  isAdmin = false;
+
+  // Contadores
+  insumosConStockBajo = 0;
+
+  // Modal de stock
+  showStockModal = false;
+  insumoSeleccionado: InsumoResponseDTO | null = null;
+  stockUpdate: InsumoUpdateStockDTO = {
+    cantidad: 0,
+    tipoOperacion: 'ENTRADA',
+    observacion: ''
+  };
+
+  // Modal de eliminación
+  showDeleteModal = false;
+  insumoAEliminar: InsumoResponseDTO | null = null;
+
+  constructor(
+    private insumoService: InsumoService,
+    private authService: AuthService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
+
+  ngOnInit(): void {
+    this.checkAdminRole();
+    this.checkQueryParams();
+    this.cargarInsumos();
+    this.cargarCategorias();
+    this.cargarProveedores();
+  }
+
+  checkQueryParams(): void {
+    // Verificar si viene con parámetro de stock bajo desde el dashboard
+    this.route.queryParams.subscribe(params => {
+      if (params['stockBajo'] === 'true') {
+        this.filtros.soloStockBajo = true;
+      }
+    });
+  }
+
+  checkAdminRole(): void {
+    this.authService.currentUser$.subscribe(user => {
+      if (user) {
+        this.isAdmin = user.rol?.nombre === 'ADMINISTRADOR';
+      }
+    });
+  }
+
+  cargarInsumos(): void {
+    this.isLoading = true;
+    this.clearMessages();
+
+    this.insumoService.obtenerTodosLosInsumos().subscribe({
+      next: (response) => {
+        this.isLoading = false;
+        if (response.exito) {
+          this.insumos = response.datos || [];
+          this.aplicarFiltros();
+          this.calcularEstadisticas();
+        } else {
+          this.errorMessage = response.mensaje;
+        }
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.errorMessage = error;
+      }
+    });
+  }
+
+  cargarCategorias(): void {
+    this.insumoService.obtenerCategorias().subscribe({
+      next: (response) => {
+        if (response.exito) {
+          this.categorias = response.datos || [];
+        }
+      },
+      error: (error) => {
+        console.error('Error cargando categorías:', error);
+      }
+    });
+  }
+
+  cargarProveedores(): void {
+    this.insumoService.obtenerProveedores().subscribe({
+      next: (response) => {
+        if (response.exito) {
+          this.proveedores = response.datos || [];
+        }
+      },
+      error: (error) => {
+        console.error('Error cargando proveedores:', error);
+      }
+    });
+  }
+
+  aplicarFiltros(): void {
+    let resultado = [...this.insumos];
+
+    // Filtrar por nombre
+    if (this.filtros.nombre) {
+      resultado = resultado.filter(insumo =>
+        insumo.nombre.toLowerCase().includes(this.filtros.nombre!.toLowerCase())
+      );
+    }
+
+    // Filtrar por categoría
+    if (this.filtros.categoria) {
+      resultado = resultado.filter(insumo => insumo.categoria === this.filtros.categoria);
+    }
+
+    // Filtrar por proveedor
+    if (this.filtros.proveedor) {
+      resultado = resultado.filter(insumo => insumo.proveedor === this.filtros.proveedor);
+    }
+
+    // Filtrar por estado
+    if (this.filtros.estado !== undefined) {
+      resultado = resultado.filter(insumo => insumo.estado === this.filtros.estado);
+    }
+
+    // Filtrar solo stock bajo
+    if (this.filtros.soloStockBajo) {
+      resultado = resultado.filter(insumo => insumo.stockBajo);
+    }
+
+    // Filtrar por rango de stock
+    if (this.filtros.stockMinimo !== undefined) {
+      resultado = resultado.filter(insumo => insumo.stock >= this.filtros.stockMinimo!);
+    }
+
+    if (this.filtros.stockMaximo !== undefined) {
+      resultado = resultado.filter(insumo => insumo.stock <= this.filtros.stockMaximo!);
+    }
+
+    this.insumosFiltered = resultado;
+    this.calcularEstadisticas();
+  }
+
+  limpiarFiltros(): void {
+    this.filtros = {
+      nombre: '',
+      categoria: '',
+      proveedor: '',
+      estado: undefined,
+      soloStockBajo: false,
+      stockMinimo: undefined,
+      stockMaximo: undefined
+    };
+    this.aplicarFiltros();
+  }
+
+  calcularEstadisticas(): void {
+    this.insumosConStockBajo = this.insumos.filter(insumo => 
+      insumo.stockBajo && insumo.estado
+    ).length;
+  }
+
+  verStockBajo(): void {
+    this.filtros.soloStockBajo = true;
+    this.aplicarFiltros();
+  }
+
+  // Navegación
+  crearInsumo(): void {
+    if (this.isAdmin) {
+      this.router.navigate(['/admin/insumos/crear']);
+    } else {
+      this.router.navigate(['/admin/insumos/crear']);
+    }
+  }
+
+  editarInsumo(id: number): void {
+    if (this.isAdmin) {
+      this.router.navigate(['/admin/insumos/editar', id]);
+    } else {
+      this.router.navigate(['/admin/insumos/editar', id]);
+    }
+  }
+
+  volverDashboard(): void {
+    if (this.isAdmin) {
+      this.router.navigate(['/admin/dashboard']);
+    } else {
+      this.router.navigate(['/dashboard']);
+    }
+  }
+
+  // Modal de stock
+  abrirModalStock(insumo: InsumoResponseDTO): void {
+    this.insumoSeleccionado = insumo;
+    this.stockUpdate = {
+      cantidad: 0,
+      tipoOperacion: 'ENTRADA',
+      observacion: ''
+    };
+    this.showStockModal = true;
+    this.clearMessages();
+  }
+
+  cerrarModalStock(): void {
+    this.showStockModal = false;
+    this.insumoSeleccionado = null;
+    this.stockUpdate = {
+      cantidad: 0,
+      tipoOperacion: 'ENTRADA',
+      observacion: ''
+    };
+  }
+
+  calcularNuevoStock(): number {
+    if (!this.insumoSeleccionado || !this.stockUpdate.cantidad) {
+      return this.insumoSeleccionado?.stock || 0;
+    }
+
+    const stockActual = this.insumoSeleccionado.stock;
+    const cantidad = this.stockUpdate.cantidad;
+
+    if (this.stockUpdate.tipoOperacion === 'ENTRADA') {
+      return stockActual + cantidad;
+    } else {
+      return stockActual - cantidad;
+    }
+  }
+
+  actualizarStock(): void {
+    if (!this.insumoSeleccionado || !this.stockUpdate.cantidad) {
+      return;
+    }
+
+    this.isProcessing = true;
+    this.clearMessages();
+
+    this.insumoService.actualizarStock(this.insumoSeleccionado.id, this.stockUpdate).subscribe({
+      next: (response) => {
+        this.isProcessing = false;
+        if (response.exito) {
+          this.successMessage = response.mensaje;
+          this.cerrarModalStock();
+          this.cargarInsumos(); // Recargar lista
+        } else {
+          this.errorMessage = response.mensaje;
+        }
+      },
+      error: (error) => {
+        this.isProcessing = false;
+        this.errorMessage = error;
+      }
+    });
+  }
+
+  // Modal de eliminación
+  confirmarEliminar(insumo: InsumoResponseDTO): void {
+    this.insumoAEliminar = insumo;
+    this.showDeleteModal = true;
+    this.clearMessages();
+  }
+
+  cancelarEliminar(): void {
+    this.showDeleteModal = false;
+    this.insumoAEliminar = null;
+  }
+
+  eliminarInsumo(): void {
+    if (!this.insumoAEliminar) {
+      return;
+    }
+
+    this.isProcessing = true;
+    this.clearMessages();
+
+    this.insumoService.eliminarInsumo(this.insumoAEliminar.id).subscribe({
+      next: (response) => {
+        this.isProcessing = false;
+        if (response.exito) {
+          this.successMessage = response.mensaje;
+          this.cancelarEliminar();
+          this.cargarInsumos(); // Recargar lista
+        } else {
+          this.errorMessage = response.mensaje;
+        }
+      },
+      error: (error) => {
+        this.isProcessing = false;
+        this.errorMessage = error;
+      }
+    });
+  }
+
+  // Toggle estado
+  toggleEstadoInsumo(insumo: InsumoResponseDTO): void {
+    if (!this.isAdmin) {
+      this.errorMessage = 'No tienes permisos para cambiar el estado del insumo';
+      return;
+    }
+
+    this.clearMessages();
+    const nuevoEstado = !insumo.estado;
+
+    this.insumoService.cambiarEstadoInsumo(insumo.id, nuevoEstado).subscribe({
+      next: (response) => {
+        if (response.exito) {
+          this.successMessage = response.mensaje;
+          this.cargarInsumos(); // Recargar lista
+        } else {
+          this.errorMessage = response.mensaje;
+        }
+      },
+      error: (error) => {
+        this.errorMessage = error;
+      }
+    });
+  }
+
+  // Utilidades
+  clearMessages(): void {
+    this.successMessage = '';
+    this.errorMessage = '';
+  }
+}

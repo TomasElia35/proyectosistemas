@@ -1,0 +1,26 @@
+Field,Type,Null,Key,Default,Extra
+id_insumo,int,NO,PRI,NULL,auto_increment
+nombre,varchar(200),NO,,NULL,
+descripcion,text,YES,,NULL,
+id_proveedor,int,YES,MUL,NULL,
+id_categoria,int,NO,MUL,NULL,
+id_sector,int,NO,MUL,NULL,
+id_estado,int,NO,MUL,NULL,
+codigo_interno,varchar(50),NO,UNI,NULL,
+codigo_barras,varchar(100),YES,,NULL,
+marca,varchar(100),YES,,NULL,
+modelo,varchar(100),YES,,NULL,
+numero_serie,varchar(150),YES,UNI,NULL,
+fecha_compra,date,YES,,NULL,
+precio_compra,"decimal(12,2)",YES,,0.00,
+moneda,varchar(3),YES,,ARS,
+fecha_vencimiento_garantia,date,YES,,NULL,
+duracion_garantia_meses,int,YES,,0,
+vida_util_estimada_meses,int,YES,,60,
+requiere_devolucion,tinyint(1),YES,,1,
+especificaciones,json,YES,,NULL,
+observaciones,text,YES,,NULL,
+imagen_url,varchar(500),YES,,NULL,
+estado,"enum('activo','inactivo')",YES,MUL,activo,
+creado,timestamp,YES,,CURRENT_TIMESTAMP,DEFAULT_GENERATED
+actualizado,timestamp,YES,,CURRENT_TIMESTAMP,"DEFAULT_GENERATED on update CURRENT_TIMESTAMP"

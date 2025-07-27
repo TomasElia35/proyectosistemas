@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Data
@@ -20,41 +21,73 @@ public class Insumo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "nombre", nullable = false, length = 100)
+    @Column(name = "nombre", nullable = false, length = 150)
     private String nombre;
 
-    @Column(name = "descripcion", length = 500)
+    @Column(name = "descripcion", columnDefinition = "TEXT")
     private String descripcion;
 
-    @Column(name = "codigo", unique = true, nullable = false, length = 50)
-    private String codigo;
+    @Column(name = "codigoInterno", unique = true, nullable = false, length = 50)
+    private String codigoInterno;
 
-    @Column(name = "precio", precision = 10, scale = 2)
-    private BigDecimal precio;
+    @Column(name = "codigoBarras", length = 100)
+    private String codigoBarras;
 
-    @Column(name = "stock", nullable = false)
-    private Integer stock;
+    @Column(name = "marca", length = 100)
+    private String marca;
 
-    @Column(name = "stock_minimo")
-    private Integer stockMinimo;
+    @Column(name = "modelo", length = 100)
+    private String modelo;
 
-    @Column(name = "unidad_medida", length = 20)
-    private String unidadMedida;
+    @Column(name = "numeroSerie", unique = true, length = 100)
+    private String numeroSerie;
 
-    @Column(name = "categoria", length = 50)
-    private String categoria;
+    @Column(name = "fechaCompra")
+    private LocalDate fechaCompra;
 
-    @Column(name = "proveedor", length = 100)
-    private String proveedor;
+    @Column(name = "precioCompra", precision = 12, scale = 2)
+    private BigDecimal precioCompra;
 
-    @Column(name = "fecha_creacion")
-    private LocalDate fechaCreacion;
+    @Column(name = "fechaGarantia")
+    private LocalDate fechaGarantia;
 
-    @Column(name = "fecha_actualizacion")
-    private LocalDate fechaActualizacion;
+    @Column(name = "mesesGarantia")
+    private Integer mesesGarantia;
+
+    @Column(name = "especificacionesTecnicas", columnDefinition = "TEXT")
+    private String especificacionesTecnicas;
+
+    @Column(name = "observaciones", columnDefinition = "TEXT")
+    private String observaciones;
+
+    @Column(name = "ubicacionFisica", length = 200)
+    private String ubicacionFisica;
 
     @Column(name = "activo")
-    private Boolean estado = true;
+    private Boolean activo = true;
+
+    @Column(name = "creado")
+    private LocalDateTime creado;
+
+    @Column(name = "actualizado")
+    private LocalDateTime actualizado;
+
+    // Relaciones con otras entidades
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "idProveedor")
+    private Proveedor proveedor;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "idCategoria", nullable = false)
+    private Categoria categoria;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "idSector")
+    private Sector sector;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "idEstado", nullable = false)
+    private Estado estado;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idUsuarioCreador")
@@ -62,22 +95,30 @@ public class Insumo {
 
     @PrePersist
     public void prePersist() {
-        if (fechaCreacion == null) {
-            fechaCreacion = LocalDate.now();
+        if (creado == null) {
+            creado = LocalDateTime.now();
         }
-        fechaActualizacion = LocalDate.now();
-        if (estado == null) {
-            estado = true;
+        actualizado = LocalDateTime.now();
+        if (activo == null) {
+            activo = true;
         }
     }
 
     @PreUpdate
     public void preUpdate() {
-        fechaActualizacion = LocalDate.now();
+        actualizado = LocalDateTime.now();
     }
 
-    // Método de utilidad para verificar stock bajo
-    public boolean isStockBajo() {
-        return stockMinimo != null && stock != null && stock <= stockMinimo;
+    // Métodos de utilidad
+    public boolean isEnGarantia() {
+        return fechaGarantia != null && fechaGarantia.isAfter(LocalDate.now());
+    }
+
+    public boolean isOperativo() {
+        return estado != null && "OPERATIVO".equals(estado.getNombre());
+    }
+
+    public boolean isActivo() {
+        return activo != null && activo;
     }
 }

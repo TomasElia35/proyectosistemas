@@ -16,7 +16,7 @@ import java.time.LocalDate;
 public class Insumo {
 
     @Id
-    @Column(name = "id_insumo")
+    @Column(name = "idInsumo")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 

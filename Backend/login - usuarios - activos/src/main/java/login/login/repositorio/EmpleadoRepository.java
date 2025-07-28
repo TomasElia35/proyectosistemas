@@ -30,6 +30,12 @@ public interface EmpleadoRepository extends JpaRepository<Empleado, Integer> {
     // Verificar si existe por email (excluyendo un ID específico para updates)
     boolean existsByEmailAndIdEmpleadoNot(String email, Integer idEmpleado);
 
+    // Verificar existencia por DNI
+    boolean existsByDni(String dni);
+
+    // Verificar existencia por email
+    boolean existsByEmail(String email);
+
     // Buscar empleados por texto en nombre, apellido, dni o email
     @Query("SELECT e FROM Empleado e WHERE " +
             "(LOWER(e.nombre) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +

@@ -39,6 +39,15 @@ public interface ComputadoraRepository extends JpaRepository<Computadora, Intege
     // Verificar si existe por número de serie (excluyendo un ID específico)
     boolean existsByNumeroSerieAndIdComputadoraNot(String numeroSerie, Integer idComputadora);
 
+    // Verificar existencia por código de activo
+    boolean existsByCodigoActivo(String codigoActivo);
+
+    // Verificar existencia por dirección IP
+    boolean existsByDireccionIp(String direccionIp);
+
+    // Verificar existencia por número de serie
+    boolean existsByNumeroSerie(String numeroSerie);
+
     // Buscar computadoras por múltiples criterios
     @Query("SELECT c FROM Computadora c WHERE " +
             "(:codigoActivo IS NULL OR LOWER(c.codigoActivo) LIKE LOWER(CONCAT('%', :codigoActivo, '%'))) AND " +

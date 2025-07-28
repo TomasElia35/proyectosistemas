@@ -36,6 +36,12 @@ public interface DispositivoMovilRepository extends JpaRepository<DispositivoMov
     // Verificar si existe por IMEI (excluyendo un ID específico)
     boolean existsByImeiAndIdDispositivoNot(String imei, Integer idDispositivo);
 
+    // Verificar existencia por código de activo
+    boolean existsByCodigoActivo(String codigoActivo);
+
+    // Verificar existencia por IMEI
+    boolean existsByImei(String imei);
+
     // Buscar dispositivos por múltiples criterios
     @Query("SELECT d FROM DispositivoMovil d WHERE " +
             "(:codigoActivo IS NULL OR LOWER(d.codigoActivo) LIKE LOWER(CONCAT('%', :codigoActivo, '%'))) AND " +

@@ -60,6 +60,12 @@ public interface LicenciaSoftwareRepository extends JpaRepository<LicenciaSoftwa
     // Verificar si existe por clave de licencia (excluyendo un ID específico)
     boolean existsByClaveLicenciaAndIdLicenciaNot(String claveLicencia, Integer idLicencia);
 
+    // Verificar existencia por clave de producto
+    boolean existsByClaveProducto(String claveProducto);
+
+    // Verificar existencia por clave de licencia
+    boolean existsByClaveLicencia(String claveLicencia);
+
     // Buscar licencias de software por múltiples criterios
     @Query("SELECT l FROM LicenciaSoftware l WHERE " +
             "(:nombreSoftware IS NULL OR LOWER(l.nombreSoftware) LIKE LOWER(CONCAT('%', :nombreSoftware, '%'))) AND " +

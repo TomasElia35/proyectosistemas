@@ -1,592 +1,291 @@
--- Tabla de Sectores/Departamentos
-CREATE TABLE sectores (
-    idSector INT AUTO_INCREMENT PRIMARY KEY,
+USE GestorInsumo;
+
+-- ====================================
+-- 1. TABLAS DE SOPORTE (MAESTROS)
+-- ====================================
+
+-- Tabla: TipoArticulo
+CREATE TABLE TipoArticulo (
+    id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL UNIQUE,
     descripcion TEXT,
-    activo TINYINT(1) DEFAULT 1,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    creado_por INT,
-    FOREIGN KEY (creado_por) REFERENCES usuario(idUsuario)
+    categoria ENUM('HARDWARE', 'SOFTWARE', 'PERIFERICO', 'ACCESORIO') NOT NULL,
+    requiereNumeroSerie BOOLEAN DEFAULT TRUE,
+    vidaUtilDefectoAnios INT DEFAULT 3,
+    requiereMantenimiento BOOLEAN DEFAULT FALSE,
+    esActivo BOOLEAN DEFAULT TRUE,
+    fechaCreacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    INDEX idx_categoria (categoria),
+    INDEX idx_activo (esActivo)
 );
 
--- Tabla de Empleados
-CREATE TABLE empleados (
-    idEmpleado INT AUTO_INCREMENT PRIMARY KEY,
+-- Tabla: Estado
+CREATE TABLE Estado (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL UNIQUE,
+    descripcion TEXT,
+    permiteAsignacion BOOLEAN DEFAULT TRUE,
+    requiereAprobacion BOOLEAN DEFAULT FALSE,
+    esEstadoFinal BOOLEAN DEFAULT FALSE,
+    esActivo BOOLEAN DEFAULT TRUE,
+    fechaCreacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    INDEX idx_permite_asignacion (permiteAsignacion),
+    INDEX idx_activo (esActivo)
+);
+
+-- Tabla: Area
+CREATE TABLE Area (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL UNIQUE,
+    descripcion TEXT,
+    centroCosto VARCHAR(50),
+    idResponsable INT NULL,
+    ubicacionFisica VARCHAR(200),
+    esActiva BOOLEAN DEFAULT TRUE,
+    fechaCreacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    INDEX idx_responsable (idResponsable),
+    INDEX idx_activa (esActiva),
+    INDEX idx_centro_costo (centroCosto)
+);
+
+-- Tabla: Empleado
+CREATE TABLE Empleado (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    legajo VARCHAR(20) NOT NULL UNIQUE,
+    dni VARCHAR(12) NOT NULL UNIQUE,
     nombre VARCHAR(100) NOT NULL,
     apellido VARCHAR(100) NOT NULL,
-    dni VARCHAR(20) UNIQUE,
-    email VARCHAR(100),
-    telefono VARCHAR(20),
-    idSector INT,
-    activo TINYINT(1) DEFAULT 1,
-    fecha_ingreso DATE,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    creado_por INT,
-    FOREIGN KEY (idSector) REFERENCES sectores(idSector),
-    FOREIGN KEY (creado_por) REFERENCES usuario(idUsuario)
+    fechaNacimiento DATE,
+    emailCorporativo VARCHAR(150) UNIQUE,
+    celularCorporativo VARCHAR(20),
+    idArea INT NOT NULL,
+    fechaIngreso DATE NOT NULL,
+    fechaBaja DATE NULL,
+    tipoContrato ENUM('PLANTA', 'CONTRATO', 'PASANTE', 'TERCERO') NOT NULL,
+    esActivo BOOLEAN DEFAULT TRUE,
+    esResponsableArea BOOLEAN DEFAULT FALSE,
+    observaciones TEXT,
+    fechaCreacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (idArea) REFERENCES Area(id),
+    INDEX idx_legajo (legajo),
+    INDEX idx_dni (dni),
+    INDEX idx_area (idArea),
+    INDEX idx_activo (esActivo),
+    INDEX idx_tipo_contrato (tipoContrato)
 );
 
--- Tabla de Estados (para todos los activos)
-CREATE TABLE estados (
-    idEstado INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(50) NOT NULL UNIQUE,
-    descripcion VARCHAR(100),
-    activo TINYINT(1) DEFAULT 1
+-- Tabla: Proveedor
+CREATE TABLE Proveedor (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(150) NOT NULL UNIQUE,
+    cuit VARCHAR(15) NOT NULL UNIQUE,
+    emailContacto VARCHAR(150),
+    telefonoContacto VARCHAR(20),
+    nombreContactoPrincipal VARCHAR(100),
+    direccion TEXT,
+    formaPago ENUM('CONTADO', 'CUENTA_CORRIENTE', 'CHEQUE', 'TRANSFERENCIA') DEFAULT 'CUENTA_CORRIENTE',
+    monedaOperacion ENUM('ARS', 'USD', 'EUR') DEFAULT 'ARS',
+    diasPagoPromedio INT DEFAULT 30,
+    esActivo BOOLEAN DEFAULT TRUE,
+    fechaAlta TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    observaciones TEXT,
+    
+    INDEX idx_cuit (cuit),
+    INDEX idx_activo (esActivo),
+    INDEX idx_forma_pago (formaPago)
 );
 
--- Insertar estados básicos
-INSERT INTO estados (nombre, descripcion) VALUES 
-('Activo', 'En funcionamiento normal'),
-('Inactivo', 'Fuera de servicio temporalmente'),
-('En Reparación', 'En proceso de reparación'),
-('Dado de Baja', 'Fuera de servicio permanentemente');
+-- ====================================
+-- 2. TABLA PRINCIPAL DE ACTIVOS
+-- ====================================
 
--- =====================================================
--- EQUIPOS Y HARDWARE
--- =====================================================
-
--- Tabla de Dispositivos Móviles
-CREATE TABLE dispositivos_moviles (
-    idDispositivo INT AUTO_INCREMENT PRIMARY KEY,
-    codigo_activo VARCHAR(50) UNIQUE NOT NULL,
-    marca VARCHAR(50),
+-- Tabla: ActivosTecnologicos
+CREATE TABLE ActivosTecnologicos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    codigoInventario VARCHAR(50) NOT NULL UNIQUE,
+    numeroSerie VARCHAR(100) UNIQUE,
+    nombre VARCHAR(200) NOT NULL,
+    descripcion TEXT,
+    marca VARCHAR(100),
     modelo VARCHAR(100),
-    numero_serie VARCHAR(100),
-    imei VARCHAR(20),
-    numero_telefono VARCHAR(20),
-    idEmpleado INT,
-    idSector INT,
-    idEstado INT DEFAULT 1,
-    fecha_asignacion DATE,
+    idTipoArticulo INT NOT NULL,
+    idProveedor INT NOT NULL,
+    costo DECIMAL(15,2) CHECK (costo >= 0),
+    fechaAdquisicion DATE NOT NULL,
+    garantiaMeses INT DEFAULT 0 CHECK (garantiaMeses >= 0),
+    fechaVencimientoGarantia DATE,
+    vidaUtilAnios INT DEFAULT 3,
+    valorLibros DECIMAL(15,2),
+    ubicacionFisica VARCHAR(200),
+    especificacionesTecnicas JSON,
+    idEstado INT NOT NULL,
+    idArea INT NOT NULL,
     observaciones TEXT,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    creado_por INT,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    actualizado_por INT,
-    FOREIGN KEY (idEmpleado) REFERENCES empleados(idEmpleado),
-    FOREIGN KEY (idSector) REFERENCES sectores(idSector),
-    FOREIGN KEY (idEstado) REFERENCES estados(idEstado),
-    FOREIGN KEY (creado_por) REFERENCES usuario(idUsuario),
-    FOREIGN KEY (actualizado_por) REFERENCES usuario(idUsuario)
+    fechaCreacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fechaUltimaModificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    usuarioCreacion VARCHAR(100) NOT NULL,
+    usuarioModificacion VARCHAR(100),
+    esActivo BOOLEAN DEFAULT TRUE,
+    
+    FOREIGN KEY (idTipoArticulo) REFERENCES TipoArticulo(id),
+    FOREIGN KEY (idProveedor) REFERENCES Proveedor(id),
+    FOREIGN KEY (idEstado) REFERENCES Estado(id),
+    FOREIGN KEY (idArea) REFERENCES Area(id),
+    
+    INDEX idx_codigo_inventario (codigoInventario),
+    INDEX idx_numero_serie (numeroSerie),
+    INDEX idx_tipo_articulo (idTipoArticulo),
+    INDEX idx_proveedor (idProveedor),
+    INDEX idx_estado (idEstado),
+    INDEX idx_area (idArea),
+    INDEX idx_marca_modelo (marca, modelo),
+    INDEX idx_fecha_adquisicion (fechaAdquisicion),
+    INDEX idx_activo (esActivo)
 );
 
--- Tabla de Computadoras/Notebooks
-CREATE TABLE computadoras (
-    idComputadora INT AUTO_INCREMENT PRIMARY KEY,
-    codigo_activo VARCHAR(50) UNIQUE NOT NULL,
-    marca VARCHAR(50),
-    modelo VARCHAR(100),
-    numero_serie VARCHAR(100),
-    direccion_ip VARCHAR(15),
-    usuario_sistema VARCHAR(100),
-    contraseña_sistema VARCHAR(255),
-    idEmpleado INT,
-    idSector INT,
-    idEstado INT DEFAULT 1,
-    fecha_asignacion DATE,
+-- ====================================
+-- 3. HISTORIAL DE ASIGNACIONES
+-- ====================================
+
+-- Tabla: AsignacionesActivos
+CREATE TABLE AsignacionesActivos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    idActivo INT NOT NULL,
+    idEmpleado INT NOT NULL,
+    idArea INT NOT NULL,
+    fechaAsignacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    fechaDesasignacion TIMESTAMP NULL,
+    motivoDesasignacion VARCHAR(500),
     observaciones TEXT,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    creado_por INT,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    actualizado_por INT,
-    FOREIGN KEY (idEmpleado) REFERENCES empleados(idEmpleado),
-    FOREIGN KEY (idSector) REFERENCES sectores(idSector),
-    FOREIGN KEY (idEstado) REFERENCES estados(idEstado),
-    FOREIGN KEY (creado_por) REFERENCES usuario(idUsuario),
-    FOREIGN KEY (actualizado_por) REFERENCES usuario(idUsuario)
+    usuarioAsignacion VARCHAR(100) NOT NULL,
+    fechaCreacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (idActivo) REFERENCES ActivosTecnologicos(id),
+    FOREIGN KEY (idEmpleado) REFERENCES Empleado(id),
+    FOREIGN KEY (idArea) REFERENCES Area(id),
+    
+    INDEX idx_activo (idActivo),
+    INDEX idx_empleado (idEmpleado),
+    INDEX idx_area (idArea),
+    INDEX idx_fecha_asignacion (fechaAsignacion),
+    INDEX idx_asignacion_activa (fechaDesasignacion) -- NULL para asignaciones activas
 );
 
--- Tabla de Impresoras
-CREATE TABLE impresoras (
-    idImpresora INT AUTO_INCREMENT PRIMARY KEY,
-    codigo_activo VARCHAR(50) UNIQUE NOT NULL,
-    marca VARCHAR(50),
-    modelo VARCHAR(100),
-    numero_serie VARCHAR(100),
-    direccion_ip VARCHAR(15),
-    ubicacion_fisica VARCHAR(200),
-    idSector INT,
-    idEstado INT DEFAULT 1,
-    fecha_instalacion DATE,
+-- ====================================
+-- 4. CONTROL DE MOVIMIENTOS (AUDITORÍA)
+-- ====================================
+
+-- Tabla: MovimientosActivos
+CREATE TABLE MovimientosActivos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    idActivo INT NOT NULL,
+    tipoMovimiento ENUM('ASIGNACION', 'DEVOLUCION', 'TRANSFERENCIA', 'MANTENIMIENTO', 'BAJA') NOT NULL,
+    fechaMovimiento TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    idEmpleadoOrigen INT NULL,
+    idEmpleadoDestino INT NULL,
+    idAreaOrigen INT NULL,
+    idAreaDestino INT NULL,
+    idEstadoAnterior INT NOT NULL,
+    idEstadoNuevo INT NOT NULL,
+    motivoMovimiento VARCHAR(500) NOT NULL,
     observaciones TEXT,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    creado_por INT,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    actualizado_por INT,
-    FOREIGN KEY (idSector) REFERENCES sectores(idSector),
-    FOREIGN KEY (idEstado) REFERENCES estados(idEstado),
-    FOREIGN KEY (creado_por) REFERENCES usuario(idUsuario),
-    FOREIGN KEY (actualizado_por) REFERENCES usuario(idUsuario)
+    usuarioMovimiento VARCHAR(100) NOT NULL,
+    fechaCreacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (idActivo) REFERENCES ActivosTecnologicos(id),
+    FOREIGN KEY (idEmpleadoOrigen) REFERENCES Empleado(id),
+    FOREIGN KEY (idEmpleadoDestino) REFERENCES Empleado(id),
+    FOREIGN KEY (idAreaOrigen) REFERENCES Area(id),
+    FOREIGN KEY (idAreaDestino) REFERENCES Area(id),
+    FOREIGN KEY (idEstadoAnterior) REFERENCES Estado(id),
+    FOREIGN KEY (idEstadoNuevo) REFERENCES Estado(id),
+    
+    INDEX idx_activo (idActivo),
+    INDEX idx_tipo_movimiento (tipoMovimiento),
+    INDEX idx_fecha_movimiento (fechaMovimiento),
+    INDEX idx_empleado_origen (idEmpleadoOrigen),
+    INDEX idx_empleado_destino (idEmpleadoDestino),
+    INDEX idx_area_origen (idAreaOrigen),
+    INDEX idx_area_destino (idAreaDestino)
 );
 
--- Tabla de Scanners
-CREATE TABLE scanners (
-    idScanner INT AUTO_INCREMENT PRIMARY KEY,
-    codigo_activo VARCHAR(50) UNIQUE NOT NULL,
-    marca VARCHAR(50),
-    modelo VARCHAR(100),
-    numero_serie VARCHAR(100),
-    direccion_ip VARCHAR(15),
-    idEmpleado INT,
-    idSector INT,
-    idEstado INT DEFAULT 1,
-    fecha_asignacion DATE,
+-- ====================================
+-- 5. GESTIÓN DE MANTENIMIENTOS
+-- ====================================
+
+-- Tabla: MantenimientosActivos
+CREATE TABLE MantenimientosActivos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    idActivo INT NOT NULL,
+    tipoMantenimiento ENUM('PREVENTIVO', 'CORRECTIVO', 'GARANTIA', 'UPGRADE') NOT NULL,
+    fechaProgramada DATE NOT NULL,
+    fechaRealizada DATE NULL,
+    idProveedor INT NULL,
+    tecnicoAsignado VARCHAR(150),
+    costo DECIMAL(10,2) DEFAULT 0 CHECK (costo >= 0),
+    descripcionProblema TEXT,
+    descripcionSolucion TEXT,
+    repuestosUtilizados TEXT,
+    horasFueraServicio INT DEFAULT 0,
+    idEstadoResultante INT NOT NULL,
     observaciones TEXT,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    creado_por INT,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    actualizado_por INT,
-    FOREIGN KEY (idEmpleado) REFERENCES empleados(idEmpleado),
-    FOREIGN KEY (idSector) REFERENCES sectores(idSector),
-    FOREIGN KEY (idEstado) REFERENCES estados(idEstado),
-    FOREIGN KEY (creado_por) REFERENCES usuario(idUsuario),
-    FOREIGN KEY (actualizado_por) REFERENCES usuario(idUsuario)
+    usuarioCreacion VARCHAR(100) NOT NULL,
+    fechaCreacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (idActivo) REFERENCES ActivosTecnologicos(id),
+    FOREIGN KEY (idProveedor) REFERENCES Proveedor(id),
+    FOREIGN KEY (idEstadoResultante) REFERENCES Estado(id),
+    
+    INDEX idx_activo (idActivo),
+    INDEX idx_tipo_mantenimiento (tipoMantenimiento),
+    INDEX idx_fecha_programada (fechaProgramada),
+    INDEX idx_fecha_realizada (fechaRealizada),
+    INDEX idx_proveedor (idProveedor)
 );
 
--- Tabla de Teléfonos Internos
-CREATE TABLE telefonos_internos (
-    idTelefono INT AUTO_INCREMENT PRIMARY KEY,
-    codigo_activo VARCHAR(50) UNIQUE NOT NULL,
-    numero_interno VARCHAR(10) NOT NULL,
-    marca VARCHAR(50),
-    modelo VARCHAR(100),
-    ubicacion_fisica VARCHAR(200),
-    idEmpleado INT,
-    idSector INT,
-    idEstado INT DEFAULT 1,
-    fecha_asignacion DATE,
-    observaciones TEXT,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    creado_por INT,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    actualizado_por INT,
-    FOREIGN KEY (idEmpleado) REFERENCES empleados(idEmpleado),
-    FOREIGN KEY (idSector) REFERENCES sectores(idSector),
-    FOREIGN KEY (idEstado) REFERENCES estados(idEstado),
-    FOREIGN KEY (creado_por) REFERENCES usuario(idUsuario),
-    FOREIGN KEY (actualizado_por) REFERENCES usuario(idUsuario)
-);
+-- ====================================
+-- 6. RELACIÓN CON USUARIOS EXISTENTES
+-- ====================================
 
--- Tabla de Monitores
-CREATE TABLE monitores (
-    idMonitor INT AUTO_INCREMENT PRIMARY KEY,
-    codigo_activo VARCHAR(50) UNIQUE NOT NULL,
-    marca VARCHAR(50),
-    modelo VARCHAR(100),
-    numero_serie VARCHAR(100),
-    tamaño VARCHAR(10),
-    idEmpleado INT,
-    idSector INT,
-    idEstado INT DEFAULT 1,
-    fecha_asignacion DATE,
-    observaciones TEXT,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    creado_por INT,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    actualizado_por INT,
-    FOREIGN KEY (idEmpleado) REFERENCES empleados(idEmpleado),
-    FOREIGN KEY (idSector) REFERENCES sectores(idSector),
-    FOREIGN KEY (idEstado) REFERENCES estados(idEstado),
-    FOREIGN KEY (creado_por) REFERENCES usuario(idUsuario),
-    FOREIGN KEY (actualizado_por) REFERENCES usuario(idUsuario)
-);
+-- Agregar FK a Area para responsable (referencia a usuario existente)
+ALTER TABLE Area ADD CONSTRAINT fk_area_responsable 
+FOREIGN KEY (idResponsable) REFERENCES usuario(idUsuario);
 
--- Tabla de Equipos de Red
-CREATE TABLE equipos_red (
-    idEquipoRed INT AUTO_INCREMENT PRIMARY KEY,
-    codigo_activo VARCHAR(50) UNIQUE NOT NULL,
-    tipo ENUM('Router', 'Switch', 'Access Point', 'Otro') NOT NULL,
-    marca VARCHAR(50),
-    modelo VARCHAR(100),
-    numero_serie VARCHAR(100),
-    direccion_ip VARCHAR(15),
-    usuario_admin VARCHAR(100),
-    contraseña_admin VARCHAR(255),
-    ubicacion_fisica VARCHAR(200),
-    idSector INT,
-    idEstado INT DEFAULT 1,
-    fecha_instalacion DATE,
-    observaciones TEXT,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    creado_por INT,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    actualizado_por INT,
-    FOREIGN KEY (idSector) REFERENCES sectores(idSector),
-    FOREIGN KEY (idEstado) REFERENCES estados(idEstado),
-    FOREIGN KEY (creado_por) REFERENCES usuario(idUsuario),
-    FOREIGN KEY (actualizado_por) REFERENCES usuario(idUsuario)
-);
+-- ====================================
+-- 7. DATOS INICIALES BÁSICOS
+-- ====================================
 
--- Tabla de Periféricos
-CREATE TABLE perifericos (
-    idPeriferico INT AUTO_INCREMENT PRIMARY KEY,
-    codigo_activo VARCHAR(50) UNIQUE NOT NULL,
-    tipo ENUM('Teclado', 'Mouse', 'Webcam', 'Auriculares', 'Otro') NOT NULL,
-    marca VARCHAR(50),
-    modelo VARCHAR(100),
-    idEmpleado INT,
-    idSector INT,
-    idEstado INT DEFAULT 1,
-    fecha_asignacion DATE,
-    observaciones TEXT,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    creado_por INT,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    actualizado_por INT,
-    FOREIGN KEY (idEmpleado) REFERENCES empleados(idEmpleado),
-    FOREIGN KEY (idSector) REFERENCES sectores(idSector),
-    FOREIGN KEY (idEstado) REFERENCES estados(idEstado),
-    FOREIGN KEY (creado_por) REFERENCES usuario(idUsuario),
-    FOREIGN KEY (actualizado_por) REFERENCES usuario(idUsuario)
-);
+-- Estados básicos del sistema
+INSERT INTO Estado (nombre, descripcion, permiteAsignacion, requiereAprobacion, esEstadoFinal) VALUES
+('DISPONIBLE', 'Activo disponible para asignación', TRUE, FALSE, FALSE),
+('ASIGNADO', 'Activo asignado a empleado', FALSE, FALSE, FALSE),
+('EN_MANTENIMIENTO', 'Activo en proceso de mantenimiento', FALSE, FALSE, FALSE),
+('FUERA_SERVICIO', 'Activo fuera de servicio temporalmente', FALSE, TRUE, FALSE),
+('BAJA_DEFINITIVA', 'Activo dado de baja permanentemente', FALSE, TRUE, TRUE),
+('EN_REPARACION', 'Activo en reparación externa', FALSE, FALSE, FALSE),
+('OBSOLETO', 'Activo obsoleto pero funcional', TRUE, TRUE, FALSE);
 
--- Tabla de Equipos Audiovisuales
-CREATE TABLE equipos_audiovisuales (
-    idEquipoAV INT AUTO_INCREMENT PRIMARY KEY,
-    codigo_activo VARCHAR(50) UNIQUE NOT NULL,
-    tipo ENUM('Proyector', 'Pantalla', 'Parlantes', 'Micrófono', 'Otro') NOT NULL,
-    marca VARCHAR(50),
-    modelo VARCHAR(100),
-    numero_serie VARCHAR(100),
-    ubicacion_fisica VARCHAR(200),
-    idSector INT,
-    idEstado INT DEFAULT 1,
-    fecha_instalacion DATE,
-    observaciones TEXT,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    creado_por INT,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    actualizado_por INT,
-    FOREIGN KEY (idSector) REFERENCES sectores(idSector),
-    FOREIGN KEY (idEstado) REFERENCES estados(idEstado),
-    FOREIGN KEY (creado_por) REFERENCES usuario(idUsuario),
-    FOREIGN KEY (actualizado_por) REFERENCES usuario(idUsuario)
-);
+-- Tipos de artículos básicos
+INSERT INTO TipoArticulo (nombre, descripcion, categoria, requiereNumeroSerie, vidaUtilDefectoAnios, requiereMantenimiento) VALUES
+('Computadora de escritorio', 'PC de escritorio para oficina', 'HARDWARE', TRUE, 5, TRUE),
+('Notebook', 'Computadora portátil', 'HARDWARE', TRUE, 4, TRUE),
+('Monitor', 'Monitor LCD/LED para computadora', 'PERIFERICO', TRUE, 6, FALSE),
+('Impresora', 'Impresora láser o de inyección', 'PERIFERICO', TRUE, 3, TRUE),
+('Teclado', 'Teclado USB/PS2', 'ACCESORIO', FALSE, 2, FALSE),
+('Mouse', 'Mouse óptico/láser', 'ACCESORIO', FALSE, 2, FALSE),
+('Software', 'Licencias de software', 'SOFTWARE', FALSE, 1, FALSE),
+('Router', 'Equipo de red router', 'HARDWARE', TRUE, 5, TRUE),
+('Switch', 'Switch de red', 'HARDWARE', TRUE, 5, TRUE),
+('Proyector', 'Proyector multimedia', 'PERIFERICO', TRUE, 4, TRUE);
 
--- Tabla de Dispositivos de Almacenamiento
-CREATE TABLE dispositivos_almacenamiento (
-    idAlmacenamiento INT AUTO_INCREMENT PRIMARY KEY,
-    codigo_activo VARCHAR(50) UNIQUE NOT NULL,
-    tipo ENUM('Disco Externo', 'USB', 'SSD', 'Otro') NOT NULL,
-    marca VARCHAR(50),
-    modelo VARCHAR(100),
-    capacidad VARCHAR(20),
-    idEmpleado INT,
-    idSector INT,
-    idEstado INT DEFAULT 1,
-    fecha_asignacion DATE,
-    observaciones TEXT,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    creado_por INT,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    actualizado_por INT,
-    FOREIGN KEY (idEmpleado) REFERENCES empleados(idEmpleado),
-    FOREIGN KEY (idSector) REFERENCES sectores(idSector),
-    FOREIGN KEY (idEstado) REFERENCES estados(idEstado),
-    FOREIGN KEY (creado_por) REFERENCES usuario(idUsuario),
-    FOREIGN KEY (actualizado_por) REFERENCES usuario(idUsuario)
-);
-
--- Tabla de Equipos UPS/Estabilizadores
-CREATE TABLE equipos_energia (
-    idEquipoEnergia INT AUTO_INCREMENT PRIMARY KEY,
-    codigo_activo VARCHAR(50) UNIQUE NOT NULL,
-    tipo ENUM('UPS', 'Estabilizador', 'Otro') NOT NULL,
-    marca VARCHAR(50),
-    modelo VARCHAR(100),
-    numero_serie VARCHAR(100),
-    potencia VARCHAR(20),
-    ubicacion_fisica VARCHAR(200),
-    idSector INT,
-    idEstado INT DEFAULT 1,
-    fecha_instalacion DATE,
-    observaciones TEXT,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    creado_por INT,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    actualizado_por INT,
-    FOREIGN KEY (idSector) REFERENCES sectores(idSector),
-    FOREIGN KEY (idEstado) REFERENCES estados(idEstado),
-    FOREIGN KEY (creado_por) REFERENCES usuario(idUsuario),
-    FOREIGN KEY (actualizado_por) REFERENCES usuario(idUsuario)
-);
-
--- Tabla de Cámaras de Seguridad
-CREATE TABLE camaras_seguridad (
-    idCamara INT AUTO_INCREMENT PRIMARY KEY,
-    codigo_activo VARCHAR(50) UNIQUE NOT NULL,
-    marca VARCHAR(50),
-    modelo VARCHAR(100),
-    direccion_ip VARCHAR(15),
-    usuario_admin VARCHAR(100),
-    contraseña_admin VARCHAR(255),
-    ubicacion_fisica VARCHAR(200),
-    idSector INT,
-    idEstado INT DEFAULT 1,
-    fecha_instalacion DATE,
-    observaciones TEXT,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    creado_por INT,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    actualizado_por INT,
-    FOREIGN KEY (idSector) REFERENCES sectores(idSector),
-    FOREIGN KEY (idEstado) REFERENCES estados(idEstado),
-    FOREIGN KEY (creado_por) REFERENCES usuario(idUsuario),
-    FOREIGN KEY (actualizado_por) REFERENCES usuario(idUsuario)
-);
-
--- =====================================================
--- CREDENCIALES Y ACCESOS
--- =====================================================
-
--- Tabla de Correos Electrónicos
-CREATE TABLE correos_electronicos (
-    idCorreo INT AUTO_INCREMENT PRIMARY KEY,
-    direccion_email VARCHAR(100) NOT NULL UNIQUE,
-    contraseña VARCHAR(255) NOT NULL,
-    idEmpleado INT,
-    idSector INT,
-    tipo_cuenta ENUM('Personal', 'Compartida') DEFAULT 'Personal',
-    activo TINYINT(1) DEFAULT 1,
-    fecha_creacion_cuenta DATE,
-    observaciones TEXT,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    creado_por INT,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    actualizado_por INT,
-    FOREIGN KEY (idEmpleado) REFERENCES empleados(idEmpleado),
-    FOREIGN KEY (idSector) REFERENCES sectores(idSector),
-    FOREIGN KEY (creado_por) REFERENCES usuario(idUsuario),
-    FOREIGN KEY (actualizado_por) REFERENCES usuario(idUsuario)
-);
-
--- Tabla de Redes WiFi
-CREATE TABLE redes_wifi (
-    idWifi INT AUTO_INCREMENT PRIMARY KEY,
-    nombre_red VARCHAR(100) NOT NULL,
-    contraseña VARCHAR(255) NOT NULL,
-    zona_ubicacion VARCHAR(100),
-    tipo_seguridad ENUM('WPA2', 'WPA3', 'WEP', 'Abierta') DEFAULT 'WPA2',
-    idSector INT,
-    activo TINYINT(1) DEFAULT 1,
-    fecha_configuracion DATE,
-    observaciones TEXT,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    creado_por INT,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    actualizado_por INT,
-    FOREIGN KEY (idSector) REFERENCES sectores(idSector),
-    FOREIGN KEY (creado_por) REFERENCES usuario(idUsuario),
-    FOREIGN KEY (actualizado_por) REFERENCES usuario(idUsuario)
-);
-
--- Tabla de Controladores de Cajas
-CREATE TABLE controladores_cajas (
-    idControlador INT AUTO_INCREMENT PRIMARY KEY,
-    codigo_controlador VARCHAR(50) UNIQUE NOT NULL,
-    direccion_ip VARCHAR(15) NOT NULL,
-    usuario VARCHAR(100),
-    contraseña VARCHAR(255),
-    ubicacion_fisica VARCHAR(200),
-    idSector INT,
-    activo TINYINT(1) DEFAULT 1,
-    fecha_configuracion DATE,
-    observaciones TEXT,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    creado_por INT,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    actualizado_por INT,
-    FOREIGN KEY (idSector) REFERENCES sectores(idSector),
-    FOREIGN KEY (creado_por) REFERENCES usuario(idUsuario),
-    FOREIGN KEY (actualizado_por) REFERENCES usuario(idUsuario)
-);
-
--- Tabla de Plataformas de Servicios (Flow, Spotify, etc.)
-CREATE TABLE plataformas_servicios (
-    idPlataforma INT AUTO_INCREMENT PRIMARY KEY,
-    nombre_plataforma VARCHAR(100) NOT NULL,
-    tipo_servicio ENUM('Pago', 'Streaming', 'Red Social', 'Almacenamiento', 'Marketing', 'Bancario', 'Logística', 'Otro') NOT NULL,
-    usuario VARCHAR(100) NOT NULL,
-    contraseña VARCHAR(255) NOT NULL,
-    email_asociado VARCHAR(100),
-    url_acceso VARCHAR(255),
-    tipo_cuenta VARCHAR(50),
-    idSector INT,
-    activo TINYINT(1) DEFAULT 1,
-    fecha_suscripcion DATE,
-    observaciones TEXT,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    creado_por INT,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    actualizado_por INT,
-    FOREIGN KEY (idSector) REFERENCES sectores(idSector),
-    FOREIGN KEY (creado_por) REFERENCES usuario(idUsuario),
-    FOREIGN KEY (actualizado_por) REFERENCES usuario(idUsuario)
-);
-
--- Tabla de Sistemas Empresariales
-CREATE TABLE sistemas_empresariales (
-    idSistema INT AUTO_INCREMENT PRIMARY KEY,
-    nombre_sistema VARCHAR(100) NOT NULL,
-    tipo_sistema ENUM('CRM', 'ERP', 'Facturación', 'Contabilidad', 'Otro') NOT NULL,
-    url_acceso VARCHAR(255),
-    usuario VARCHAR(100) NOT NULL,
-    contraseña VARCHAR(255) NOT NULL,
-    idEmpleado INT,
-    idSector INT,
-    rol_permisos VARCHAR(100),
-    activo TINYINT(1) DEFAULT 1,
-    fecha_asignacion DATE,
-    observaciones TEXT,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    creado_por INT,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    actualizado_por INT,
-    FOREIGN KEY (idEmpleado) REFERENCES empleados(idEmpleado),
-    FOREIGN KEY (idSector) REFERENCES sectores(idSector),
-    FOREIGN KEY (creado_por) REFERENCES usuario(idUsuario),
-    FOREIGN KEY (actualizado_por) REFERENCES usuario(idUsuario)
-);
-
--- Tabla de Servidores FTP
-CREATE TABLE servidores_ftp (
-    idServidor INT AUTO_INCREMENT PRIMARY KEY,
-    nombre_servidor VARCHAR(100) NOT NULL,
-    direccion_ip VARCHAR(15),
-    url_servidor VARCHAR(255),
-    puerto INT DEFAULT 21,
-    usuario VARCHAR(100) NOT NULL,
-    contraseña VARCHAR(255) NOT NULL,
-    idSector INT,
-    activo TINYINT(1) DEFAULT 1,
-    fecha_configuracion DATE,
-    observaciones TEXT,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    creado_por INT,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    actualizado_por INT,
-    FOREIGN KEY (idSector) REFERENCES sectores(idSector),
-    FOREIGN KEY (creado_por) REFERENCES usuario(idUsuario),
-    FOREIGN KEY (actualizado_por) REFERENCES usuario(idUsuario)
-);
-
--- =====================================================
--- LICENCIAS DE SOFTWARE
--- =====================================================
-
--- Tabla de Licencias de Software
-CREATE TABLE licencias_software (
-    idLicencia INT AUTO_INCREMENT PRIMARY KEY,
-    nombre_software VARCHAR(100) NOT NULL,
-    tipo_software ENUM('Office', 'Antivirus', 'Adobe', 'AutoCAD', 'Especializado', 'Otro') NOT NULL,
-    version VARCHAR(50),
-    clave_producto VARCHAR(255),
-    clave_licencia VARCHAR(255),
-    email_asociado VARCHAR(100),
-    tipo_licencia ENUM('Individual', 'Empresarial', 'Familiar', 'Educacional') DEFAULT 'Individual',
-    idEmpleado INT,
-    idSector INT,
-    fecha_compra DATE,
-    fecha_vencimiento DATE,
-    activo TINYINT(1) DEFAULT 1,
-    fecha_instalacion DATE,
-    costo DECIMAL(10,2),
-    proveedor VARCHAR(100),
-    observaciones TEXT,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    creado_por INT,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    actualizado_por INT,
-    FOREIGN KEY (idEmpleado) REFERENCES empleados(idEmpleado),
-    FOREIGN KEY (idSector) REFERENCES sectores(idSector),
-    FOREIGN KEY (creado_por) REFERENCES usuario(idUsuario),
-    FOREIGN KEY (actualizado_por) REFERENCES usuario(idUsuario)
-);
-
--- =====================================================
--- TABLAS DE AUDITORÍA Y HISTORIAL
--- =====================================================
-
--- Tabla de Historial de Cambios (para auditoría)
-CREATE TABLE historial_cambios (
-    idHistorial INT AUTO_INCREMENT PRIMARY KEY,
-    tabla_afectada VARCHAR(50) NOT NULL,
-    id_registro INT NOT NULL,
-    tipo_operacion ENUM('INSERT', 'UPDATE', 'DELETE') NOT NULL,
-    datos_anteriores JSON,
-    datos_nuevos JSON,
-    idUsuario INT,
-    fecha_cambio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    observaciones TEXT,
-    FOREIGN KEY (idUsuario) REFERENCES usuario(idUsuario)
-);
-
--- =====================================================
--- ÍNDICES PARA MEJORAR PERFORMANCE
--- =====================================================
-
--- Índices para búsquedas frecuentes
-CREATE INDEX idx_empleados_sector ON empleados(idSector);
-CREATE INDEX idx_empleados_activo ON empleados(activo);
-CREATE INDEX idx_dispositivos_empleado ON dispositivos_moviles(idEmpleado);
-CREATE INDEX idx_dispositivos_sector ON dispositivos_moviles(idSector);
-CREATE INDEX idx_computadoras_empleado ON computadoras(idEmpleado);
-CREATE INDEX idx_computadoras_ip ON computadoras(direccion_ip);
-CREATE INDEX idx_correos_empleado ON correos_electronicos(idEmpleado);
-CREATE INDEX idx_licencias_vencimiento ON licencias_software(fecha_vencimiento);
-CREATE INDEX idx_historial_tabla_registro ON historial_cambios(tabla_afectada, id_registro);
-
--- =====================================================
--- DATOS INICIALES BÁSICOS
--- =====================================================
-
--- Insertar algunos sectores básicos
-INSERT INTO sectores (nombre, descripcion) VALUES 
-('Administración', 'Sector administrativo'),
-('Sistemas', 'Departamento de sistemas e IT'),
-('Ventas', 'Departamento de ventas'),
-('Contabilidad', 'Departamento de contabilidad'),
-('Recursos Humanos', 'Departamento de RRHH');
-
--- =====================================================
--- VISTAS ÚTILES PARA REPORTES
--- =====================================================
-
--- Vista resumen de activos por empleado
-CREATE VIEW vista_activos_empleado AS
-SELECT 
-    e.idEmpleado,
-    CONCAT(e.nombre, ' ', e.apellido) as nombre_completo,
-    s.nombre as sector,
-    COUNT(dm.idDispositivo) as dispositivos_moviles,
-    COUNT(c.idComputadora) as computadoras,
-    COUNT(sc.idScanner) as scanners,
-    COUNT(ti.idTelefono) as telefonos,
-    COUNT(m.idMonitor) as monitores
-FROM empleados e
-LEFT JOIN sectores s ON e.idSector = s.idSector
-LEFT JOIN dispositivos_moviles dm ON e.idEmpleado = dm.idEmpleado AND dm.idEstado = 1
-LEFT JOIN computadoras c ON e.idEmpleado = c.idEmpleado AND c.idEstado = 1
-LEFT JOIN scanners sc ON e.idEmpleado = sc.idEmpleado AND sc.idEstado = 1
-LEFT JOIN telefonos_internos ti ON e.idEmpleado = ti.idEmpleado AND ti.idEstado = 1
-LEFT JOIN monitores m ON e.idEmpleado = m.idEmpleado AND m.idEstado = 1
-WHERE e.activo = 1
-GROUP BY e.idEmpleado, e.nombre, e.apellido, s.nombre;
-
--- Vista de licencias próximas a vencer (30 días)
-CREATE VIEW vista_licencias_vencimiento AS
-SELECT 
-    l.idLicencia,
-    l.nombre_software,
-    l.tipo_software,
-    l.fecha_vencimiento,
-    DATEDIFF(l.fecha_vencimiento, CURDATE()) as dias_restantes,
-    CONCAT(emp.nombre, ' ', emp.apellido) as empleado_asignado,
-    s.nombre as sector
-FROM licencias_software l
-LEFT JOIN empleados emp ON l.idEmpleado = emp.idEmpleado
-LEFT JOIN sectores s ON l.idSector = s.idSector
-WHERE l.activo = 1 
-AND l.fecha_vencimiento IS NOT NULL 
-AND l.fecha_vencimiento <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)
-ORDER BY l.fecha_vencimiento ASC;
+-- Áreas básicas (ejemplos)
+INSERT INTO Area (nombre, descripcion, centroCosto, ubicacionFisica) VALUES
+('Sistemas', 'Área de Tecnología y Sistemas', 'CC001', 'Piso 2 - Oficina 201'),
+('Administración', 'Área Administrativa', 'CC002', 'Piso 1 - Oficina 101'),
+('Recursos Humanos', 'Área de RRHH', 'CC003', 'Piso 1 - Oficina 105'),
+('Deposito', 'Depósito de equipos', 'CC999', 'Planta Baja - Depósito'),
+('Gerencia', 'Gerencia General', 'CC000', 'Piso 3 - Oficina 301');

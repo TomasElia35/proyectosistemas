@@ -153,6 +153,11 @@ import { ActivoTecnologicoResponseDTO } from '../../models/activo.model';
         </div>
       </div>
     </div>
+    <!-- En activos-list.component.ts, cambia el botón a: -->
+<button class="btn btn-primary" (click)="crearActivo()">
+  <i class="icon">+</i>
+  Nuevo Activo
+</button>
   `,
   styles: [`
     .activos-list-container {
@@ -571,6 +576,7 @@ this.activosService.listar().subscribe({
   }
 
 crearActivo(): void {
+  console.log('🚀 Navegando a crear activo...');
   this.router.navigate(['/admin/activos/crear']);
 }
 
@@ -579,6 +585,7 @@ crearActivo(): void {
   }
 
 editarActivo(id: number): void {
+  console.log('✏️ Navegando a editar activo:', id);
   this.router.navigate(['/admin/activos', id, 'editar']);
 }
 
@@ -635,4 +642,48 @@ this.activosService.eliminar(this.activoAEliminar!.id).subscribe({
       this.errorMessage = '';
     }
   }
+  // Agrega este método temporal en activos-list.component.ts para debug
+debugNavigation(): void {
+  console.log('%c🐛 DEBUG COMPLETO - Estado actual:', 'color: purple; font-weight: bold; background: yellow; padding: 5px;');
+  
+  // Verificar almacenamiento local
+  const token = localStorage.getItem('token');
+  const userStr = localStorage.getItem('currentUser');
+  
+  console.log('💾 LocalStorage:');
+  console.log('  Token:', token ? `PRESENTE (${token.length} chars)` : 'AUSENTE');
+  console.log('  CurrentUser:', userStr ? 'PRESENTE' : 'AUSENTE');
+  
+  if (userStr) {
+    try {
+      const user = JSON.parse(userStr);
+      console.log('  Usuario parseado:', {
+        id: user.id,
+        nombre: user.nombre,
+        apellido: user.apellido,
+        rol: user.rol?.nombre
+      });
+    } catch (e) {
+      console.error('  ❌ Error parseando usuario:', e);
+    }
+  }
+  
+  // Verificar servicio de auth
+  console.log('🔐 AuthService:');
+  console.log('  isAuthenticated():', this.authService.isAuthenticated());
+  console.log('  getCurrentUser():', this.authService.getCurrentUser());
+  console.log('  getToken():', this.authService.getToken() ? 'PRESENTE' : 'AUSENTE');
+  
+  // Verificar URL actual
+  console.log('🌐 Router:');
+  console.log('  URL actual:', this.router.url);
+  
+  // Intentar navegar con logging
+  console.log('🚀 Intentando navegar a /admin/activos/crear');
+  
+  this.router.navigate(['/admin/activos/crear']).then(
+    success => console.log('✅ Navegación exitosa:', success),
+    error => console.error('❌ Error en navegación:', error)
+  );
+}
 }

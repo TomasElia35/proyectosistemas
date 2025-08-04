@@ -76,27 +76,30 @@ export class ActivosFormComponent implements OnInit {
     this.activosService.getEstados().subscribe(data => this.estados = data);
   }
 
-  guardar(): void {
-    if (this.activoForm.invalid) {
-      this.activoForm.markAllAsTouched();
-      return;
-    }
+guardar(): void {
+  if (this.activoForm.invalid) {
+    this.activoForm.markAllAsTouched();
+    return;
+  }
 
-    const dto: ActivoTecnologicoRequestDTO = this.activoForm.value;
+  const dto: ActivoTecnologicoRequestDTO = this.activoForm.value;
 
   if (this.isEditMode) {
     this.activosService.actualizar(this.id!, dto).subscribe(() => {
+      console.log('✅ Activo actualizado, volviendo a lista');
       this.router.navigate(['/admin/activos']);
     });
   } else {
     this.activosService.crear(dto).subscribe(() => {
+      console.log('✅ Activo creado, volviendo a lista');
       this.router.navigate(['/admin/activos']);
     });
-    }
+  }
+}
 
+  cancelar(): void {
+    console.log('↩️ Cancelando, volviendo a lista de activos');
+    this.router.navigate(['/admin/activos']);
   }
 
-cancelar(): void {
-  this.router.navigate(['/admin/activos']);
-}
 }

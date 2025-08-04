@@ -8,7 +8,7 @@ import { ActivoTecnologicoRequestDTO, ActivoTecnologicoResponseDTO } from '../mo
 })
 export class ActivosService {
 
-  private baseUrl = '/api/activos';
+  private baseUrl = 'http://localhost:8080/api/activos';
 
   constructor(private http: HttpClient) {}
 

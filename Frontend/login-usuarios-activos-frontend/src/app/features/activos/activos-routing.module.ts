@@ -5,7 +5,7 @@ import { ActivosFormComponent } from '../activos/components/activos-form/activos
 
 const routes: Routes = [
   { path: '', component: ActivosListComponent },
-  { path: 'nuevo', component: ActivosFormComponent },
+  { path: 'crear', component: ActivosFormComponent },
   { path: ':id/editar', component: ActivosFormComponent },
 ];
 

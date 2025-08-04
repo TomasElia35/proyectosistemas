@@ -570,17 +570,17 @@ this.activosService.listar().subscribe({
 
   }
 
-  crearActivo(): void {
-    this.router.navigate(['/activos/crear']);
-  }
+crearActivo(): void {
+  this.router.navigate(['/admin/activos/crear']);
+}
 
   verDetalleActivo(id: number): void {
     this.router.navigate(['/activos/detalle', id]);
   }
 
-  editarActivo(id: number): void {
-    this.router.navigate(['/activos/editar', id]);
-  }
+editarActivo(id: number): void {
+  this.router.navigate(['/admin/activos', id, 'editar']);
+}
 
   confirmarEliminar(activo: ActivoTecnologicoResponseDTO): void {
     this.activoAEliminar = activo;

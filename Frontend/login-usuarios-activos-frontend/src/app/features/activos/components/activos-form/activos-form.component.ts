@@ -84,18 +84,19 @@ export class ActivosFormComponent implements OnInit {
 
     const dto: ActivoTecnologicoRequestDTO = this.activoForm.value;
 
-    if (this.isEditMode) {
-      this.activosService.actualizar(this.id!, dto).subscribe(() => {
-        this.router.navigate(['/activos']);
-      });
-    } else {
-      this.activosService.crear(dto).subscribe(() => {
-        this.router.navigate(['/activos']);
-      });
+  if (this.isEditMode) {
+    this.activosService.actualizar(this.id!, dto).subscribe(() => {
+      this.router.navigate(['/admin/activos']);
+    });
+  } else {
+    this.activosService.crear(dto).subscribe(() => {
+      this.router.navigate(['/admin/activos']);
+    });
     }
+
   }
 
-  cancelar(): void {
-    this.router.navigate(['/activos']);
-  }
+cancelar(): void {
+  this.router.navigate(['/admin/activos']);
+}
 }

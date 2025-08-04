@@ -32,11 +32,12 @@ export const routes: Routes = [
     loadComponent: () => import('./auth/components/usuarios/user-list.component').then(c => c.UserListComponent),
     canActivate: [AuthGuard, AdminGuard]
   },
-  {
+{
   path: 'admin/activos',
-  loadChildren: () => import('./features/activos/activos.module').then(m => m.ActivosModule),
+  loadChildren: () => import('./features/activos/activos.routes').then(m => m.ROUTES),
   canActivate: [AuthGuard, AdminGuard]
-  },
+},
+
 
   {
     path: 'admin/usuarios/crear',

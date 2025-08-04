@@ -1,13 +1,22 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ActivosService } from '../../services/activos.service';
 import { ActivoTecnologicoRequestDTO } from '../../models/activo.model';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-activos-form',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
+    RouterModule
+  ],
   templateUrl: './activos-form.component.html'
 })
+
 export class ActivosFormComponent implements OnInit {
 
   activoForm: FormGroup;

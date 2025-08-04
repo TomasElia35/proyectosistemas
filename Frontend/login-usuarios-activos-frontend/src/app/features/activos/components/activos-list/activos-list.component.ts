@@ -1,15 +1,19 @@
 // src/app/features/activos/components/activos-list.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { ActivosService } from '../../services/activos.service';
 import { AuthService } from '../../../../auth/services/auth.service';
 import { ActivoTecnologicoResponseDTO } from '../../models/activo.model';
 
 @Component({
-  selector: 'app-activos-list',
   standalone: true,
-  imports: [CommonModule],
+  selector: 'app-activos-list',
+  imports: [
+  CommonModule,
+  RouterModule
+]
+,
   template: `
     <div class="activos-list-container">
       <div class="header">

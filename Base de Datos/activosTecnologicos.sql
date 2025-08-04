@@ -44,7 +44,7 @@ CREATE TABLE Area (
     fechaCreacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
     INDEX idx_responsable (idResponsable),
-    INDEX idx_activa (esActiva)
+    INDEX idx_activa (activa)
 );
 
 -- Tabla: Empleado
@@ -146,37 +146,17 @@ CREATE TABLE ActivosTecnologicos (
     INDEX idx_activo (activo)
 );
 
--- ====================================
--- 3. DATOS INICIALES BÁSICOS
--- ====================================
+-- MODIFICACION ASIGNACION A EMPLEADO Y NO A AREA DE ACTIVO TECNOLOGICO
+-- 1. Eliminar la constraint de clave foránea existente
+ALTER TABLE ActivosTecnologicos
+  DROP FOREIGN KEY activostecnologicos_ibfk_4;
 
--- Estados básicos del sistema
-INSERT INTO Estado (nombre, descripcion, permiteAsignacion, requiereAprobacion, esEstadoFinal) VALUES
-('DISPONIBLE', 'Activo disponible para asignación', TRUE, FALSE, FALSE),
-('ASIGNADO', 'Activo asignado a empleado', FALSE, FALSE, FALSE),
-('EN_MANTENIMIENTO', 'Activo en proceso de mantenimiento', FALSE, FALSE, FALSE),
-('FUERA_SERVICIO', 'Activo fuera de servicio temporalmente', FALSE, TRUE, FALSE),
-('BAJA_DEFINITIVA', 'Activo dado de baja permanentemente', FALSE, TRUE, TRUE),
-('EN_REPARACION', 'Activo en reparación externa', FALSE, FALSE, FALSE),
-('OBSOLETO', 'Activo obsoleto pero funcional', TRUE, TRUE, FALSE);
+-- 2. Eliminar la columna
+ALTER TABLE ActivosTecnologicos
+  DROP COLUMN idArea;
 
--- Tipos de artículos básicos
-INSERT INTO TipoArticulo (nombre, descripcion, categoria, requiereNumeroSerie, vidaUtilDefectoAnios, requiereMantenimiento) VALUES
-('Computadora de escritorio', 'PC de escritorio para oficina', 'HARDWARE', TRUE, 5, TRUE),
-('Notebook', 'Computadora portátil', 'HARDWARE', TRUE, 4, TRUE),
-('Monitor', 'Monitor LCD/LED para computadora', 'PERIFERICO', TRUE, 6, FALSE),
-('Impresora', 'Impresora láser o de inyección', 'PERIFERICO', TRUE, 3, TRUE),
-('Teclado', 'Teclado USB/PS2', 'ACCESORIO', FALSE, 2, FALSE),
-('Mouse', 'Mouse óptico/láser', 'ACCESORIO', FALSE, 2, FALSE),
-('Software', 'Licencias de software', 'SOFTWARE', FALSE, 1, FALSE),
-('Router', 'Equipo de red router', 'HARDWARE', TRUE, 5, TRUE),
-('Switch', 'Switch de red', 'HARDWARE', TRUE, 5, TRUE),
-('Proyector', 'Proyector multimedia', 'PERIFERICO', TRUE, 4, TRUE);
+-- 3. Agregar columna y clave foránea a Empleado
+ALTER TABLE ActivosTecnologicos
+  ADD COLUMN idEmpleado INT NOT NULL,
+  ADD CONSTRAINT fk_activo_empleado FOREIGN KEY (idEmpleado) REFERENCES Empleado(id);
 
--- Áreas básicas (ejemplos)
-INSERT INTO Area (nombre, descripcion, centroCosto, ubicacionFisica) VALUES
-('Sistemas', 'Área de Tecnología y Sistemas', 'CC001', 'Piso 2 - Oficina 201'),
-('Administración', 'Área Administrativa', 'CC002', 'Piso 1 - Oficina 101'),
-('Recursos Humanos', 'Área de RRHH', 'CC003', 'Piso 1 - Oficina 105'),
-('Deposito', 'Depósito de equipos', 'CC999', 'Planta Baja - Depósito'),
-('Gerencia', 'Gerencia General', 'CC000', 'Piso 3 - Oficina 301');

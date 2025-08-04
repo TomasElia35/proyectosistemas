@@ -39,6 +39,17 @@ import { AuthService, UsuarioResponsiveDTO } from '../../../../auth/services/aut
             </div>
           </div>
 
+  <div class="module-card" (click)="navegarA('/admin/activos')">
+    <div class="module-icon">🖥️</div>
+    <div class="module-content">
+      <h3>Gestión de Activos</h3>
+      <p>Crear, editar y gestionar activos del sistema</p>
+      <div class="module-actions">
+        <span class="action-link">Ver activos →</span>
+      </div>
+    </div>
+  </div>
+
           <div class="module-card">
             <div class="module-icon">🛠️</div>
             <div class="module-content">
@@ -352,7 +363,7 @@ export class AdminDashboardComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.authService.currentUser$.subscribe(user => {

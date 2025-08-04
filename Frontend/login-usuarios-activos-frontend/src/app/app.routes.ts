@@ -33,6 +33,12 @@ export const routes: Routes = [
     canActivate: [AuthGuard, AdminGuard]
   },
   {
+  path: 'admin/activos',
+  loadChildren: () => import('./features/activos/activos.module').then(m => m.ActivosModule),
+  canActivate: [AuthGuard, AdminGuard]
+  },
+
+  {
     path: 'admin/usuarios/crear',
     loadComponent: () => import('./auth/components/usuarios/user-form.component').then(c => c.UserFormComponent),
     canActivate: [AuthGuard, AdminGuard]
@@ -42,6 +48,7 @@ export const routes: Routes = [
     loadComponent: () => import('./auth/components/usuarios/user-form.component').then(c => c.UserFormComponent),
     canActivate: [AuthGuard, AdminGuard]
   },
+  
   
   // Catch all - redirige a login si la ruta no existe
   { path: '**', redirectTo: '/login' }

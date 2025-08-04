@@ -34,7 +34,7 @@ export const routes: Routes = [
   },
 {
   path: 'admin/activos',
-  loadChildren: () => import('./features/activos/activos.routes').then(m => m.ROUTES),
+  loadChildren: () => import('../app/features/activos/activos.routes').then(m => m.ROUTES),
   canActivate: [AuthGuard, AdminGuard]
 },
 
